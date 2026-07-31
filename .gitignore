@@ -1,0 +1,5 @@
+node_modules/
+test-results/
+playwright-report/
+.browser-e2e-profile/
+.edge-check-*/

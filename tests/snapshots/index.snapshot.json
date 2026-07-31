@@ -1,0 +1,26 @@
+{
+  "title": "Pixel Game Hub - 复古像素游戏厅",
+  "dataFileGames": 17,
+  "categories": [
+    "全部",
+    "经典街机",
+    "动作平台",
+    "音乐节奏",
+    "模拟经营",
+    "类幸存者",
+    "横版卷轴",
+    "休闲益智"
+  ],
+  "requiredChinese": [
+    "玩家状态台",
+    "作品陈列架",
+    "全部游戏"
+  ],
+  "requiredScripts": [
+    "games.js",
+    "app.js"
+  ],
+  "cssHash": "f4e4b20bee6eefaca1956eb13e1348848ce3cabb106f1f2a1a3e7f16c96b786c",
+  "appHash": "718b96c1cc6dc5b73b7ca1c2aa9dcecf79c086d1c0eebd1cb0fb5d3db62e8c66",
+  "gamesHash": "7aea10775163b2e89bcf851f0c17e9d8dea96728c92c80399a070591a9d9f520"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "pixel-game-hub",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node tests/run-tests.js",
+    "test:unit": "node tests/run-tests.js --unit",
+    "test:regression": "node tests/run-tests.js --regression",
+    "test:e2e": "node tests/run-tests.js --e2e",
+    "test:playwright": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.0"
+  }
+}
