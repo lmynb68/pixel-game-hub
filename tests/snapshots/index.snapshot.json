@@ -12,15 +12,15 @@
     "休闲益智"
   ],
   "requiredChinese": [
-    "玩家状态台",
-    "作品陈列架",
+    "像素桌面系统",
+    "游戏启动器",
     "全部游戏"
   ],
   "requiredScripts": [
-    "games.js",
     "app.js"
   ],
-  "cssHash": "f4e4b20bee6eefaca1956eb13e1348848ce3cabb106f1f2a1a3e7f16c96b786c",
-  "appHash": "718b96c1cc6dc5b73b7ca1c2aa9dcecf79c086d1c0eebd1cb0fb5d3db62e8c66",
-  "gamesHash": "7aea10775163b2e89bcf851f0c17e9d8dea96728c92c80399a070591a9d9f520"
+  "usesJsonData": true,
+  "cssHash": "53d8208001908f5dd7252467471f1130cd80df357b1351cd3c5e1a6bdaccc53b",
+  "appHash": "c4de589b3e3f6456ba6858291835485539ccef1cab9fe0c5f0f64460b3307a77",
+  "gamesHash": "10d3aea795e47265dfc47faab0843220b75594d28376ca20945257477c1d4226"
 }

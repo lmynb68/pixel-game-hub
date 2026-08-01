@@ -4,20 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pixel Game Hub - 复古像素游戏厅</title>
+  <link rel="icon" href="data:,">
   <style>
     :root {
-      --bg: #17130f;
-      --panel: rgba(28, 24, 18, .94);
-      --panel-soft: rgba(42, 36, 27, .86);
-      --line: rgba(255, 207, 104, .18);
-      --line-bright: rgba(255, 207, 104, .36);
-      --text: #fff4d4;
-      --muted: #c9b88d;
-      --mint: #70ffd7;
-      --gold: #ffcf68;
-      --gold-deep: #6a5128;
-      --ink: #100d09;
-      --radius: 28px;
+      --ink: #202033;
+      --panel: #fff7d6;
+      --paper: #fffdf0;
+      --blue: #68c7ff;
+      --blue-deep: #2d5ca8;
+      --yellow: #ffe16a;
+      --green: #79d67a;
+      --red: #ff6b6b;
+      --purple: #8c7cff;
+      --shadow: #202033;
+      --muted: #5b5a78;
     }
 
     * {
@@ -27,14 +27,15 @@
     body {
       margin: 0;
       min-height: 100vh;
-      color: var(--text);
+      color: var(--ink);
       background:
-        radial-gradient(circle at 12% 12%, rgba(255, 207, 104, .12), transparent 26%),
-        radial-gradient(circle at 15% 88%, rgba(146, 48, 140, .2), transparent 30%),
-        linear-gradient(120deg, rgba(70, 255, 215, .12), transparent 22%),
-        #0e0c0a;
-      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+        linear-gradient(90deg, rgba(255, 255, 255, .18) 1px, transparent 1px),
+        linear-gradient(rgba(255, 255, 255, .18) 1px, transparent 1px),
+        linear-gradient(135deg, #70d6ff 0%, #8c7cff 48%, #ff9f7a 100%);
+      background-size: 24px 24px, 24px 24px, auto;
+      font-family: "Courier New", "Microsoft YaHei", monospace;
       letter-spacing: 0;
+      image-rendering: pixelated;
     }
 
     button,
@@ -46,382 +47,426 @@
       cursor: pointer;
     }
 
-    .app {
-      display: grid;
-      grid-template-columns: 360px minmax(0, 1fr);
-      gap: 26px;
+    .desktop {
       min-height: 100vh;
-      padding: 26px;
+      padding: 22px 22px 78px;
+      position: relative;
     }
 
-    .sidebar {
-      position: sticky;
-      top: 26px;
-      align-self: start;
-      min-height: calc(100vh - 52px);
-      padding: 24px;
-      border: 1px solid var(--line-bright);
-      border-radius: 0 var(--radius) var(--radius) 0;
-      background: linear-gradient(180deg, rgba(28, 24, 18, .96), rgba(20, 15, 13, .94));
-      box-shadow: 16px 0 44px rgba(0, 0, 0, .28);
+    .top-window {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto 18px;
+      border: 4px solid var(--shadow);
+      background: var(--panel);
+      box-shadow: 8px 8px 0 var(--shadow);
+    }
+
+    .titlebar {
+      grid-column: 1 / -1;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 0 12px;
+      color: #fff;
+      background: var(--blue-deep);
+      border-bottom: 4px solid var(--shadow);
+      font-weight: 900;
+    }
+
+    .lights {
+      display: flex;
+      gap: 8px;
+    }
+
+    .light {
+      width: 16px;
+      height: 16px;
+      border: 3px solid var(--shadow);
+      background: var(--yellow);
+    }
+
+    .light:nth-child(2) {
+      background: var(--green);
+    }
+
+    .light:nth-child(3) {
+      background: var(--red);
+    }
+
+    .hero-copy {
+      padding: 20px 24px 24px;
     }
 
     .kicker {
-      color: var(--mint);
-      font-size: 15px;
-      font-weight: 800;
+      color: var(--blue-deep);
+      font-size: 14px;
+      font-weight: 900;
     }
 
     h1,
     h2 {
-      margin: 10px 0 0;
-      color: var(--text);
+      margin: 8px 0 0;
       line-height: 1;
       font-weight: 900;
     }
 
-    .sidebar h1 {
-      font-size: clamp(30px, 4vw, 42px);
+    h1 {
+      font-size: clamp(34px, 6vw, 72px);
+      text-shadow: 5px 5px 0 var(--yellow);
     }
 
-    .stat-list {
+    .hero-copy p {
+      max-width: 720px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.75;
+    }
+
+    .status-dock {
       display: grid;
-      gap: 14px;
-      margin-top: 28px;
+      grid-template-columns: repeat(3, 112px);
+      gap: 12px;
+      padding: 0 24px 24px 0;
     }
 
     .stat {
-      min-height: 70px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      padding: 0 20px;
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      background: rgba(255, 244, 212, .04);
+      min-height: 92px;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+      border: 4px solid var(--shadow);
+      background: var(--paper);
+      box-shadow: 5px 5px 0 var(--shadow);
+      text-align: center;
+      font-weight: 900;
     }
 
     .stat span {
-      color: var(--mint);
-      font-weight: 800;
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .stat strong {
-      color: var(--text);
+      display: block;
+      margin-top: 6px;
       font-size: 30px;
-      line-height: 1;
     }
 
-    .side-block {
-      margin-top: 26px;
-      padding-top: 24px;
-      border-top: 1px dashed var(--line);
+    .workspace {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      gap: 18px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .launcher,
+    .folder-window {
+      border: 4px solid var(--shadow);
+      background: var(--panel);
+      box-shadow: 8px 8px 0 var(--shadow);
+    }
+
+    .launcher {
+      align-self: start;
+    }
+
+    .launcher-body {
+      padding: 16px;
+    }
+
+    .side-block + .side-block {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 4px dotted rgba(32, 32, 51, .18);
     }
 
     .side-title {
       display: flex;
       justify-content: space-between;
-      gap: 16px;
-      color: var(--muted);
-      font-weight: 800;
+      gap: 12px;
+      font-weight: 900;
     }
 
-    .side-title strong {
-      color: var(--text);
-      font-size: 22px;
+    .side-title span {
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .recent-list {
-      margin: 16px 0 0;
+      margin: 12px 0 0;
       padding-left: 18px;
       color: var(--muted);
-      font-size: 18px;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 700;
       line-height: 1.7;
     }
 
     .hint {
-      margin-top: 18px;
-      padding: 20px;
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      background: linear-gradient(135deg, rgba(255, 207, 104, .13), rgba(112, 255, 215, .08));
+      margin-top: 12px;
+      padding: 12px;
+      border: 4px solid var(--shadow);
+      background: #d9fff2;
       color: var(--muted);
-      font-size: 17px;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 700;
       line-height: 1.65;
     }
 
-    .main {
-      min-width: 0;
-      padding: 4px 0 40px;
+    .window-body {
+      padding: 18px;
     }
 
     .toolbar {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 22px;
+      gap: 16px;
       align-items: end;
-      margin-bottom: 26px;
+      margin-bottom: 16px;
     }
 
     .toolbar h2 {
-      font-size: clamp(34px, 5vw, 54px);
+      font-size: clamp(30px, 4vw, 48px);
+      text-shadow: 4px 4px 0 var(--yellow);
     }
 
     .toolbar p {
-      margin: 0 0 10px;
+      margin: 6px 0 0;
       color: var(--muted);
-      font-size: 20px;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      font-size: 14px;
       font-weight: 700;
     }
 
     .search-row {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       justify-content: flex-end;
     }
 
+    .search,
+    .random,
+    .filter,
+    .play,
+    .video {
+      border: 4px solid var(--shadow);
+      box-shadow: 4px 4px 0 var(--shadow);
+      font-weight: 900;
+    }
+
     .search {
-      width: min(360px, 36vw);
-      min-height: 46px;
-      padding: 0 16px;
-      color: var(--text);
-      border: 1px solid var(--line-bright);
-      border-radius: 999px;
-      background: rgba(28, 24, 18, .78);
+      width: min(320px, 32vw);
+      min-height: 42px;
+      padding: 0 12px;
+      color: var(--ink);
+      background: var(--paper);
       outline: none;
     }
 
     .random {
-      min-height: 46px;
-      padding: 0 18px;
+      min-height: 42px;
+      padding: 0 14px;
       color: var(--ink);
-      border: 0;
-      border-radius: 999px;
-      background: var(--gold);
-      font-weight: 900;
+      background: var(--green);
     }
 
     .filters {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 28px;
+      gap: 10px;
+      margin-bottom: 18px;
     }
 
     .filter {
-      min-height: 50px;
-      padding: 0 22px;
-      color: var(--muted);
-      border: 1px solid var(--line-bright);
-      border-radius: 999px;
-      background: rgba(28, 24, 18, .78);
-      font-size: 18px;
-      font-weight: 800;
+      min-height: 38px;
+      padding: 0 14px;
+      color: var(--ink);
+      background: var(--paper);
     }
 
     .filter.active {
-      color: var(--text);
-      background: rgba(255, 207, 104, .24);
-      border-color: var(--gold);
-      box-shadow: inset 0 0 0 1px rgba(255, 207, 104, .16);
+      background: var(--yellow);
     }
 
     .game-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(260px, 1fr));
-      gap: 22px;
+      grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+      gap: 18px;
+      align-items: start;
     }
 
     .game-card {
-      overflow: hidden;
+      min-height: 208px;
       display: flex;
       flex-direction: column;
-      min-height: 560px;
-      border: 1px solid var(--line-bright);
-      border-radius: 24px;
-      background: linear-gradient(180deg, rgba(19, 17, 12, .96), rgba(12, 10, 7, .97));
-      box-shadow: 0 18px 54px rgba(0, 0, 0, .22);
+      border: 0;
+      background: transparent;
+      text-align: center;
     }
 
     .cover {
-      height: 178px;
+      width: 96px;
+      height: 84px;
+      margin: 0 auto 10px;
       position: relative;
-      overflow: hidden;
+      border: 4px solid var(--shadow);
       background:
-        radial-gradient(circle at 58% 34%, var(--c1), transparent 16%),
-        radial-gradient(circle at 42% 52%, var(--c2), transparent 20%),
-        linear-gradient(135deg, var(--c3), #17130f 72%);
+        linear-gradient(180deg, var(--c1), var(--c2));
+      box-shadow: 6px 6px 0 var(--shadow);
+    }
+
+    .cover.has-image {
+      width: 124px;
+      height: 84px;
+      background-color: var(--paper);
+      background-position: center;
+      background-size: cover;
     }
 
     .cover::before {
       content: "";
       position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(90deg, rgba(255, 255, 255, .12) 1px, transparent 1px),
-        linear-gradient(rgba(255, 255, 255, .1) 1px, transparent 1px);
-      background-size: 14px 14px;
-      opacity: .22;
+      left: -4px;
+      top: -20px;
+      width: 52px;
+      height: 24px;
+      border: 4px solid var(--shadow);
+      border-bottom: 0;
+      background: var(--yellow);
+    }
+
+    .cover.has-image::before {
+      display: none;
     }
 
     .sprite {
       position: absolute;
       left: 50%;
-      top: 50%;
-      width: 84px;
-      height: 84px;
+      top: 54%;
+      width: 34px;
+      height: 34px;
       transform: translate(-50%, -50%);
-      background: var(--sprite, var(--gold));
+      background: var(--sprite, var(--green));
       box-shadow:
-        -28px 0 0 rgba(255, 244, 212, .8),
-        28px 0 0 rgba(255, 244, 212, .8),
-        0 -28px 0 rgba(255, 244, 212, .7),
-        0 28px 0 rgba(0, 0, 0, .34);
-      clip-path: polygon(50% 0, 90% 18%, 100% 60%, 66% 100%, 34% 100%, 0 60%, 10% 18%);
+        -14px 0 0 rgba(255, 255, 255, .75),
+        14px 0 0 rgba(255, 255, 255, .75),
+        0 14px 0 rgba(32, 32, 51, .35);
+    }
+
+    .cover.has-image .sprite {
+      display: none;
     }
 
     .card-body {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      padding: 24px;
+      display: contents;
     }
 
     .card-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      display: block;
+      min-height: 46px;
     }
 
     .card-head h3 {
       margin: 0;
-      color: var(--text);
-      font-size: 25px;
-      line-height: 1.2;
+      font-size: 15px;
+      line-height: 1.28;
+      overflow-wrap: anywhere;
     }
 
-    .status {
-      flex: 0 0 auto;
-      min-width: 84px;
-      min-height: 40px;
-      display: grid;
-      place-items: center;
-      color: var(--ink);
-      border-radius: 999px;
-      background: var(--gold);
-      font-weight: 900;
-    }
-
+    .status,
     .meta-row,
-    .tag-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .pill {
-      min-height: 32px;
-      padding: 5px 12px;
-      color: var(--muted);
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255, 244, 212, .04);
-      font-size: 14px;
-    }
-
-    .pin {
-      color: var(--ink);
-      background: var(--gold);
-      border-color: var(--gold);
-      font-weight: 900;
-    }
-
-    .desc {
-      margin: 24px 0 0;
-      color: var(--muted);
-      font-size: 18px;
-      font-weight: 700;
-      line-height: 1.65;
-    }
-
+    .desc,
+    .tag-row,
+    .activity,
     .card-spacer {
-      flex: 1;
-    }
-
-    .activity {
-      display: flex;
-      justify-content: space-between;
-      gap: 14px;
-      margin-top: 22px;
-      color: var(--muted);
-      font-weight: 800;
+      display: none;
     }
 
     .card-actions {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 16px;
+      gap: 8px;
+      margin-top: 8px;
     }
 
     .play,
     .video {
-      min-height: 52px;
-      border-radius: 16px;
-      font-size: 18px;
-      font-weight: 900;
-    }
-
-    .play {
+      min-height: 34px;
       color: var(--ink);
-      border: 0;
-      background: var(--gold);
+      background: var(--blue);
+      font-size: 13px;
     }
 
     .video {
-      color: var(--text);
-      border: 1px solid var(--line-bright);
-      background: rgba(255, 244, 212, .04);
+      background: var(--paper);
     }
 
     .empty {
       grid-column: 1 / -1;
-      padding: 36px;
-      border: 1px dashed var(--line-bright);
-      border-radius: 20px;
+      padding: 24px;
+      border: 4px dashed var(--shadow);
+      background: var(--paper);
       color: var(--muted);
-      background: rgba(28, 24, 18, .72);
-      font-size: 20px;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      font-size: 16px;
+      font-weight: 700;
     }
 
-    @media (max-width: 1240px) {
-      .app {
-        grid-template-columns: 300px minmax(0, 1fr);
-      }
-
-      .game-grid {
-        grid-template-columns: repeat(2, minmax(240px, 1fr));
-      }
+    .taskbar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 8px 18px;
+      border-top: 4px solid var(--shadow);
+      background: var(--panel);
+      z-index: 20;
     }
 
-    @media (max-width: 900px) {
-      .app {
-        grid-template-columns: 1fr;
-        padding: 16px;
-      }
+    .start-chip,
+    .task-chip {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      border: 4px solid var(--shadow);
+      background: var(--green);
+      box-shadow: 3px 3px 0 var(--shadow);
+      font-weight: 900;
+    }
 
-      .sidebar {
-        position: static;
-        min-height: auto;
-        border-radius: 24px;
-      }
+    .task-chip {
+      background: var(--paper);
+      color: var(--muted);
+    }
 
+    @media (max-width: 980px) {
+      .top-window,
+      .workspace,
       .toolbar {
         grid-template-columns: 1fr;
-        align-items: start;
+      }
+
+      .status-dock {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        padding: 0 24px 24px;
       }
 
       .search-row {
@@ -434,80 +479,98 @@
     }
 
     @media (max-width: 620px) {
-      .app {
-        padding: 10px;
+      .desktop {
+        padding: 10px 10px 72px;
+      }
+
+      .status-dock {
+        grid-template-columns: 1fr;
+      }
+
+      .window-body {
+        padding: 12px;
       }
 
       .game-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px 10px;
       }
 
-      .toolbar p {
-        font-size: 16px;
+      .search-row {
+        flex-direction: column;
       }
 
-      .filter {
-        min-height: 42px;
-        padding: 0 14px;
-        font-size: 15px;
-      }
-
-      .game-card {
-        min-height: 500px;
-      }
-
-      .card-actions {
-        grid-template-columns: 1fr;
+      .taskbar {
+        font-size: 12px;
       }
     }
   </style>
 </head>
 <body>
-  <main class="app">
-    <aside class="sidebar" aria-label="玩家状态">
-      <div class="kicker">玩家状态</div>
-      <h1>玩家状态台</h1>
-
-      <div class="stat-list">
+  <main class="desktop">
+    <section class="top-window">
+      <div class="titlebar">
+        <span>PIXEL_OS / GAME_LIBRARY.EXE</span>
+        <div class="lights"><span class="light"></span><span class="light"></span><span class="light"></span></div>
+      </div>
+      <div class="hero-copy">
+        <div class="kicker">像素桌面系统</div>
+        <h1>游戏启动器</h1>
+        <p>像老电脑桌面一样收纳小游戏：每个作品是一枚文件夹图标，分类像目录，点击开始就能进入本地游戏或外部网页。</p>
+      </div>
+      <div class="status-dock" aria-label="玩家状态">
         <div class="stat"><span>已收录</span><strong id="total-count">0</strong></div>
         <div class="stat"><span>可试玩</span><strong id="playable-count">0</strong></div>
         <div class="stat"><span>开发中</span><strong id="building-count">0</strong></div>
       </div>
+    </section>
 
-      <section class="side-block">
-        <div class="side-title"><strong>最近游玩</strong><span id="recent-count">0 条记录</span></div>
-        <ul class="recent-list" id="recent-list">
-          <li>还没有游玩记录，先点一款试试。</li>
-        </ul>
-      </section>
+    <section class="workspace">
+      <aside class="launcher" aria-label="玩家状态">
+        <div class="titlebar"><span>PLAYER.LOG</span><span>--</span></div>
+        <div class="launcher-body">
+          <section class="side-block">
+            <div class="side-title"><strong>最近游玩</strong><span id="recent-count">0 条记录</span></div>
+            <ul class="recent-list" id="recent-list">
+              <li>还没有游玩记录，先点一款试试。</li>
+            </ul>
+          </section>
 
-      <section class="side-block">
-        <div class="side-title"><strong>高频点击</strong><span id="top-click-label">等待统计</span></div>
-        <div class="hint" id="preference-hint">点击任意卡片后，这里会记录你的偏好。</div>
-      </section>
-    </aside>
-
-    <section class="main">
-      <header class="toolbar">
-        <div>
-          <div class="kicker">作品陈列架</div>
-          <h2 id="list-title">全部游戏</h2>
+          <section class="side-block">
+            <div class="side-title"><strong>高频点击</strong><span id="top-click-label">等待统计</span></div>
+            <div class="hint" id="preference-hint">点击任意图标后，这里会记录你的偏好。</div>
+          </section>
         </div>
-        <div>
-          <p>按类型筛选，或直接随机进入一款已上线作品。</p>
-          <div class="search-row">
-            <input class="search" id="search-input" type="search" placeholder="搜索游戏、类型、标签">
-            <button class="random" id="random-button">随机开玩</button>
-          </div>
-        </div>
-      </header>
+      </aside>
 
-      <nav class="filters" id="filters" aria-label="游戏类型筛选"></nav>
-      <section class="game-grid" id="game-grid" aria-live="polite"></section>
+      <section class="folder-window">
+        <div class="titlebar"><span>GAMES_FOLDER</span><span id="folder-count">0 ITEMS</span></div>
+        <div class="window-body">
+          <header class="toolbar">
+            <div>
+              <div class="kicker">当前目录</div>
+              <h2 id="list-title">全部游戏</h2>
+              <p>用分类按钮切换目录，或搜索游戏名、类型和标签。</p>
+            </div>
+            <div class="search-row">
+              <input class="search" id="search-input" type="search" placeholder="搜索游戏、类型、标签">
+              <button class="random" id="random-button">随机开玩</button>
+            </div>
+          </header>
+
+          <nav class="filters" id="filters" aria-label="游戏类型筛选"></nav>
+          <section class="game-grid" id="game-grid" aria-live="polite"></section>
+        </div>
+      </section>
     </section>
   </main>
 
-  <script src="./games.js"></script>
+  <footer class="taskbar">
+    <span class="start-chip">START</span>
+    <span class="task-chip">GAME_LIBRARY.EXE</span>
+    <span class="task-chip">READY</span>
+  </footer>
+
   <script src="./app.js"></script>
 </body>
 </html>

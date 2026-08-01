@@ -7,7 +7,7 @@
     "test:unit": "node tests/run-tests.js --unit",
     "test:regression": "node tests/run-tests.js --regression",
     "test:e2e": "node tests/run-tests.js --e2e",
-    "test:playwright": "playwright test"
+    "test:playwright": "node tests/run-playwright.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.0"

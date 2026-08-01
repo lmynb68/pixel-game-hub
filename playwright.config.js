@@ -12,6 +12,12 @@ module.exports = defineConfig({
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
+  webServer: {
+    command: "node tests/static-server.js",
+    url: "http://127.0.0.1:4173",
+    reuseExistingServer: true,
+    timeout: 10000,
+  },
   projects: [
     {
       name: "desktop",

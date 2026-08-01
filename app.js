@@ -1,5 +1,5 @@
-(function () {
-  const games = Array.isArray(window.GAME_LIBRARY) ? window.GAME_LIBRARY : [];
+(async function () {
+  let games = [];
   const storageKey = "pixel-game-hub-state";
   const state = {
     filter: "全部",
@@ -18,9 +18,24 @@
     filters: document.querySelector("#filters"),
     grid: document.querySelector("#game-grid"),
     title: document.querySelector("#list-title"),
+    folderCount: document.querySelector("#folder-count"),
     search: document.querySelector("#search-input"),
     random: document.querySelector("#random-button")
   };
+
+  async function loadGames() {
+    const response = await fetch("./games.json", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`games.json 加载失败：${response.status}`);
+    }
+    const data = await response.json();
+    const overrides = data.customOverrides || {};
+    const rawGames = Array.isArray(data.games) ? data.games : [];
+    return rawGames.map((game) => ({
+      ...game,
+      ...(overrides[game.id] || {})
+    }));
+  }
 
   function loadActivity() {
     try {
@@ -106,6 +121,9 @@
   function renderCards() {
     const visibleGames = filteredGames();
     els.title.textContent = state.filter === "全部" ? "全部游戏" : state.filter;
+    if (els.folderCount) {
+      els.folderCount.textContent = `${visibleGames.length} ITEMS`;
+    }
 
     if (!visibleGames.length) {
       els.grid.innerHTML = `<div class="empty">没有找到匹配的游戏，换个关键词或分类试试。</div>`;
@@ -115,9 +133,13 @@
     els.grid.innerHTML = visibleGames.map((game) => {
       const [c1, c2, c3, sprite] = game.colors;
       const tagHtml = game.tags.map((tag) => `<span class="pill">${escapeHtml(tag)}</span>`).join("");
+      const coverStyle = game.coverImage
+        ? `background-image:url('${escapeHtml(game.coverImage)}')`
+        : "";
+      const coverClass = game.coverImage ? "cover has-image" : "cover";
       return `
         <article class="game-card" style="--c1:${c1};--c2:${c2};--c3:${c3};--sprite:${sprite}" data-game-id="${escapeHtml(game.id)}">
-          <div class="cover"><div class="sprite"></div></div>
+          <div class="${coverClass}" style="${coverStyle}"><div class="sprite"></div></div>
           <div class="card-body">
             <div class="card-head">
               <h3>${escapeHtml(game.title)}</h3>
@@ -196,5 +218,10 @@
     if (game) markPlayed(game.id);
   });
 
-  render();
+  try {
+    games = await loadGames();
+    render();
+  } catch (error) {
+    els.grid.innerHTML = `<div class="empty">${escapeHtml(error.message)}。如果你是双击打开 HTML，请改用本地服务器打开页面。</div>`;
+  }
 })();

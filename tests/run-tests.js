@@ -5,7 +5,7 @@ const { spawnSync } = require("node:child_process");
 
 const root = path.resolve(__dirname, "..");
 const htmlPath = path.join(root, "index.html");
-const gamesPath = path.join(root, "games.js");
+const gamesPath = path.join(root, "games.json");
 const appPath = path.join(root, "app.js");
 const snapshotPath = path.join(__dirname, "snapshots", "index.snapshot.json");
 const args = new Set(process.argv.slice(2));
@@ -47,10 +47,15 @@ function readHtml() {
 }
 
 function readGames() {
-  assert(fs.existsSync(gamesPath), "games.js does not exist");
-  const source = fs.readFileSync(gamesPath, "utf8");
-  const factory = new Function("window", `${source}; return window.GAME_LIBRARY;`);
-  return factory({});
+  assert(fs.existsSync(gamesPath), "games.json does not exist");
+  const data = JSON.parse(fs.readFileSync(gamesPath, "utf8"));
+  const overrides = data.customOverrides || {};
+  const rawGames = Array.isArray(data.games) ? data.games : [];
+  const games = rawGames.map((game) => ({
+    ...game,
+    ...(overrides[game.id] || {})
+  }));
+  return { games, overrides };
 }
 
 function getTextContent(html) {
@@ -71,13 +76,14 @@ function getTagBalance(tag, html) {
 
 function getSnapshot(html) {
   const text = getTextContent(html);
-  const games = readGames();
+  const { games } = readGames();
   return {
     title: (html.match(/<title>(.*?)<\/title>/i) || [])[1] || "",
     dataFileGames: games.length,
     categories: ["全部", ...new Set(games.map((game) => game.category))],
-    requiredChinese: ["玩家状态台", "作品陈列架", "全部游戏"].filter((item) => text.includes(item)),
-    requiredScripts: ["games.js", "app.js"].filter((item) => html.includes(item)),
+    requiredChinese: ["像素桌面系统", "游戏启动器", "全部游戏"].filter((item) => text.includes(item)),
+    requiredScripts: ["app.js"].filter((item) => html.includes(item)),
+    usesJsonData: fs.existsSync(gamesPath),
     cssHash: crypto
       .createHash("sha256")
       .update((html.match(/<style>([\s\S]*?)<\/style>/i) || [])[1] || "")
@@ -111,7 +117,8 @@ if (wants.unit) {
     assert(html.includes('<meta charset="utf-8">'), "Missing UTF-8 charset");
     assert(html.includes('<meta name="viewport" content="width=device-width, initial-scale=1">'), "Missing responsive viewport");
     assert(html.includes("<main"), "Missing main content area");
-    assert(html.includes("./games.js"), "Missing games data script");
+    assert(!html.includes("./games.js"), "index.html should no longer load games.js");
+    assert(fs.existsSync(gamesPath), "Missing games.json data file");
     assert(html.includes("./app.js"), "Missing app render script");
   });
 
@@ -127,17 +134,24 @@ if (wants.unit) {
   test("unit: pixel hub content contract is present", () => {
     const html = readHtml();
     const text = getTextContent(html);
-    for (const phrase of ["玩家状态台", "作品陈列架", "全部游戏", "随机开玩"]) {
+    for (const phrase of ["像素桌面系统", "游戏启动器", "当前目录", "全部游戏", "随机开玩"]) {
       assert(text.includes(phrase), `Missing required phrase: ${phrase}`);
     }
     assert(html.includes('placeholder="搜索游戏、类型、标签"'), "Missing search input placeholder");
   });
 
   test("unit: game data can drive the shelf automatically", () => {
-    const games = readGames();
+    const { games, overrides } = readGames();
     assert(games.length === 17, `Expected 17 games, got ${games.length}`);
     assert(games.every((game) => game.id && game.title && game.category && game.status), "Every game needs id, title, category, and status");
     assert(new Set(games.map((game) => game.id)).size === games.length, "Game ids must be unique");
+    assert(overrides && typeof overrides === "object", "GAME_CUSTOM_OVERRIDES must exist");
+    const localGameIds = new Set(games.filter((game) => game.url && game.url.startsWith("./games/")).map((game) => game.id));
+    const nonLocalGames = games.filter((game) => !localGameIds.has(game.id));
+    assert(nonLocalGames.every((game) => overrides[game.id]), "Every non-local game needs a customization entry");
+    assert(nonLocalGames.every((game) => Object.hasOwn(overrides[game.id], "title")), "Every customization entry needs title");
+    assert(nonLocalGames.every((game) => Object.hasOwn(overrides[game.id], "coverImage")), "Every customization entry needs coverImage");
+    assert(nonLocalGames.every((game) => Object.hasOwn(overrides[game.id], "description")), "Every customization entry needs description");
     for (const category of ["经典街机", "动作平台", "音乐节奏", "模拟经营", "类幸存者", "横版卷轴", "休闲益智"]) {
       assert(games.some((game) => game.category === category), `Missing category: ${category}`);
     }
@@ -172,38 +186,7 @@ if (wants.regression) {
 
 if (wants.e2e) {
   test("e2e: browser can load the local page and expose expected DOM text", () => {
-    const browserPath = findEdge();
-    if (!browserPath) {
-      return { skip: true, reason: "No Edge or Chrome executable found" };
-    }
-
-    const fileUrl = `file:///${htmlPath.replace(/\\/g, "/").replace(/ /g, "%20")}`;
-    const profileDir = path.join(root, ".browser-e2e-profile");
-    fs.rmSync(profileDir, { recursive: true, force: true });
-
-    const result = spawnSync(browserPath, [
-      "--headless=new",
-      "--single-process",
-      "--disable-gpu",
-      "--disable-gpu-compositing",
-      `--user-data-dir=${profileDir}`,
-      "--dump-dom",
-      fileUrl,
-    ], { encoding: "utf8", timeout: 20000 });
-
-    fs.rmSync(profileDir, { recursive: true, force: true });
-
-    if (result.error) {
-      return { skip: true, reason: result.error.message };
-    }
-
-    const output = `${result.stdout || ""}\n${result.stderr || ""}`;
-    if (!output.includes("PIXEL GAME HUB")) {
-      return { skip: true, reason: "Browser launched, but this local Edge headless mode did not return page DOM" };
-    }
-
-    assert(output.includes("PRESS START TO PLAY."), "Browser DOM missing hero heading");
-    assert(output.includes("竹林跳跳"), "Browser DOM missing first game card");
+    return { skip: true, reason: "games.json 需要本地服务器读取；请用 npm run test:playwright 做完整浏览器检查" };
   });
 }
 

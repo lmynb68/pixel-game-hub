@@ -1,8 +1,7 @@
-const path = require("node:path");
 const { test, expect } = require("@playwright/test");
 
-const pageUrl = `file:///${path.resolve(__dirname, "../../index.html").replace(/\\/g, "/")}`;
-const snakeUrl = `file:///${path.resolve(__dirname, "../../games/snake/index.html").replace(/\\/g, "/")}`;
+const pageUrl = "http://127.0.0.1:4173/index.html";
+const snakeUrl = "http://127.0.0.1:4173/games/snake/index.html";
 
 test.describe("Pixel Game Hub", () => {
   test.beforeEach(async ({ page }) => {
@@ -28,11 +27,12 @@ test.describe("Pixel Game Hub", () => {
 
   test("loads the data-driven game shelf", async ({ page }) => {
     await expect(page).toHaveTitle("Pixel Game Hub - 复古像素游戏厅");
-    await expect(page.getByRole("heading", { name: "玩家状态台" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "游戏启动器" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "全部游戏" })).toBeVisible();
     await expect(page.locator("#total-count")).toHaveText("17");
     await expect(page.locator("#playable-count")).toHaveText("17");
     await expect(page.locator("#building-count")).toHaveText("0");
+    await expect(page.locator("#folder-count")).toHaveText("17 ITEMS");
     await expect(page.locator(".game-card")).toHaveCount(17);
     await expect(page.locator(".play")).toHaveCount(17);
   });
@@ -44,6 +44,7 @@ test.describe("Pixel Game Hub", () => {
 
     await page.locator("#filters").getByRole("button", { name: /经典街机/ }).click();
     await expect(page.getByRole("heading", { name: "经典街机" })).toBeVisible();
+    await expect(page.locator("#folder-count")).toHaveText("1 ITEMS");
     await expect(page.locator(".game-card")).toHaveCount(1);
     await expect(page.locator(".game-card")).toContainText("像素贪吃蛇");
 
@@ -91,10 +92,10 @@ test.describe("Pixel Game Hub", () => {
     }));
 
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
-    expect(metrics.bodyHeight).toBeGreaterThan(900);
+    expect(metrics.bodyHeight).toBeGreaterThan(650);
     for (const card of metrics.cards) {
-      expect(card.width).toBeGreaterThan(220);
-      expect(card.height).toBeGreaterThan(480);
+      expect(card.width).toBeGreaterThan(90);
+      expect(card.height).toBeGreaterThan(170);
     }
 
     await page.screenshot({
