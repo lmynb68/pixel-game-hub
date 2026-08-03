@@ -8,7 +8,7 @@ module.exports = defineConfig({
   },
   reporter: [["list"]],
   use: {
-    channel: "msedge",
+    channel: process.env.CI ? undefined : "msedge",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
