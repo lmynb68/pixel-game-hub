@@ -1,6 +1,10 @@
 (async function () {
   let games = [];
   const storageKey = "pixel-game-hub-state";
+  const defaultColors = ["#70d6ff", "#ffe16a", "#202033", "#79d67a"];
+  const defaultCategory = "未分类";
+  const onlineStatus = "已上线";
+  const playableStatus = "可试玩";
   const state = {
     filter: "全部",
     query: "",
@@ -31,17 +35,73 @@
     const data = await response.json();
     const overrides = data.customOverrides || {};
     const rawGames = Array.isArray(data.games) ? data.games : [];
-    return rawGames.map((game) => ({
+    return rawGames.map((game, index) => normalizeGame({
       ...game,
       ...(overrides[game.id] || {})
-    }));
+    }, index));
   }
 
   function loadActivity() {
     try {
-      return JSON.parse(localStorage.getItem(storageKey)) || { clicks: {}, recent: [] };
+      return normalizeActivity(JSON.parse(localStorage.getItem(storageKey)));
     } catch {
       return { clicks: {}, recent: [] };
+    }
+  }
+
+  function normalizeActivity(activity) {
+    return {
+      clicks: activity && typeof activity.clicks === "object" && !Array.isArray(activity.clicks)
+        ? activity.clicks
+        : {},
+      recent: activity && Array.isArray(activity.recent)
+        ? activity.recent.filter((item) => item && item.id && item.title && item.timeLabel)
+        : []
+    };
+  }
+
+  function normalizeGame(game, index) {
+    const id = game.id || `game-${index + 1}`;
+    const tags = Array.isArray(game.tags) ? game.tags.filter(Boolean) : [];
+    const colors = normalizeColors(game.colors);
+    const title = game.title || `未命名游戏 ${index + 1}`;
+    const url = normalizeUrl(game.url);
+    const videoUrl = normalizeUrl(game.videoUrl);
+    return {
+      ...game,
+      id,
+      title,
+      category: game.category || defaultCategory,
+      releaseDate: game.releaseDate || "待定",
+      status: game.status || onlineStatus,
+      description: game.description || "这个游戏还没有填写简介，可以在 games.json 里自定义。",
+      tags,
+      colors,
+      clicks: Number.isFinite(Number(game.clicks)) ? Number(game.clicks) : 0,
+      coverImage: normalizeUrl(game.coverImage),
+      url,
+      videoUrl,
+      playable: Boolean(url),
+      video: Boolean(videoUrl)
+    };
+  }
+
+  function normalizeColors(colors) {
+    if (!Array.isArray(colors) || colors.length < 4) return defaultColors;
+    const safeColors = colors.slice(0, 4).map((color) => String(color).trim());
+    return safeColors.every((color) => /^#[0-9a-f]{3,8}$/i.test(color))
+      ? safeColors
+      : defaultColors;
+  }
+
+  function normalizeUrl(value) {
+    const url = String(value || "").trim();
+    if (!url) return "";
+    try {
+      const resolved = new URL(url, window.location.href);
+      return ["http:", "https:", "file:"].includes(resolved.protocol) ? url : "";
+    } catch {
+      return "";
     }
   }
 
@@ -54,7 +114,7 @@
   }
 
   function playableGames() {
-    return games.filter((game) => game.status === "已上线");
+    return games.filter((game) => game.playable);
   }
 
   function filteredGames() {
@@ -87,7 +147,7 @@
   function renderStats() {
     els.total.textContent = games.length;
     els.playable.textContent = playableGames().length;
-    els.building.textContent = games.filter((game) => game.status !== "已上线").length;
+    els.building.textContent = games.filter((game) => game.status !== onlineStatus).length;
 
     const recent = state.activity.recent.slice(0, 4);
     els.recentCount.textContent = `${recent.length} 条记录`;
@@ -133,17 +193,14 @@
     els.grid.innerHTML = visibleGames.map((game) => {
       const [c1, c2, c3, sprite] = game.colors;
       const tagHtml = game.tags.map((tag) => `<span class="pill">${escapeHtml(tag)}</span>`).join("");
-      const coverStyle = game.coverImage
-        ? `background-image:url('${escapeHtml(game.coverImage)}')`
-        : "";
       const coverClass = game.coverImage ? "cover has-image" : "cover";
       return `
         <article class="game-card" style="--c1:${c1};--c2:${c2};--c3:${c3};--sprite:${sprite}" data-game-id="${escapeHtml(game.id)}">
-          <div class="${coverClass}" style="${coverStyle}"><div class="sprite"></div></div>
+          <div class="${coverClass}" data-cover-image="${escapeHtml(game.coverImage)}"><div class="sprite"></div></div>
           <div class="card-body">
             <div class="card-head">
               <h3>${escapeHtml(game.title)}</h3>
-              <span class="status">${escapeHtml(game.status)}</span>
+              <span class="status">${escapeHtml(game.playable ? playableStatus : game.status)}</span>
             </div>
             <div class="meta-row">
               ${game.pinned ? '<span class="pill pin">置顶</span>' : ""}
@@ -158,13 +215,21 @@
               <span>最近游玩 ${escapeHtml(lastPlayed(game))}</span>
             </div>
             <div class="card-actions">
-              <button class="play" type="button" data-action="play" data-game-id="${escapeHtml(game.id)}">开始游戏</button>
-              <button class="video" type="button" data-action="video" data-game-id="${escapeHtml(game.id)}">${game.video ? "查看视频" : "暂无视频"}</button>
+              <button class="play" type="button" data-action="play" data-game-id="${escapeHtml(game.id)}" ${game.playable ? "" : "disabled"}>${game.playable ? "开始游戏" : "待接入"}</button>
+              <button class="video" type="button" data-action="video" data-game-id="${escapeHtml(game.id)}" ${game.videoUrl ? "" : "disabled"}>${game.videoUrl ? "查看视频" : "暂无视频"}</button>
             </div>
           </div>
         </article>
       `;
     }).join("");
+    applyCoverImages();
+  }
+
+  function applyCoverImages() {
+    els.grid.querySelectorAll("[data-cover-image]").forEach((cover) => {
+      const image = cover.dataset.coverImage;
+      if (image) cover.style.backgroundImage = `url("${image.replace(/["\\]/g, "\\$&")}")`;
+    });
   }
 
   function render() {
@@ -199,11 +264,15 @@
   els.grid.addEventListener("click", (event) => {
     const button = event.target.closest("[data-action]");
     if (!button) return;
+    const game = games.find((item) => item.id === button.dataset.gameId);
+    if (!game) return;
     if (button.dataset.action === "play") {
-      const game = markPlayed(button.dataset.gameId);
-      if (game && game.url) {
-        window.location.href = game.url;
-      }
+      if (!game.playable) return;
+      markPlayed(game.id);
+      if (game.url) window.location.href = game.url;
+    }
+    if (button.dataset.action === "video" && game.videoUrl) {
+      window.location.href = game.videoUrl;
     }
   });
 
@@ -215,7 +284,10 @@
   els.random.addEventListener("click", () => {
     const pool = playableGames();
     const game = pool[Math.floor(Math.random() * pool.length)];
-    if (game) markPlayed(game.id);
+    if (game) {
+      markPlayed(game.id);
+      window.location.href = game.url;
+    }
   });
 
   try {
@@ -225,3 +297,4 @@
     els.grid.innerHTML = `<div class="empty">${escapeHtml(error.message)}。如果你是双击打开 HTML，请改用本地服务器打开页面。</div>`;
   }
 })();
+

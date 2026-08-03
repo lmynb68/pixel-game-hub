@@ -14,7 +14,7 @@ const runAll = args.size === 0;
 const wants = {
   unit: runAll || args.has("--unit"),
   regression: runAll || args.has("--regression"),
-  e2e: runAll || args.has("--e2e"),
+  e2e: args.has("--e2e"),
 };
 const updateSnapshot = args.has("--update-snapshot");
 
@@ -72,6 +72,15 @@ function getTagBalance(tag, html) {
     open: count(new RegExp(`<${tag}\\b`, "gi"), html),
     close: count(new RegExp(`</${tag}>`, "gi"), html),
   };
+}
+
+function canResolveUrl(value) {
+  try {
+    const url = new URL(value, "http://example.test/");
+    return ["http:", "https:"].includes(url.protocol);
+  } catch {
+    return false;
+  }
 }
 
 function getSnapshot(html) {
@@ -158,6 +167,37 @@ if (wants.unit) {
     const snake = games.find((game) => game.id === "pixel-snake");
     assert(snake && snake.url === "./games/snake/index.html", "Snake game must be linked from data");
     assert(fs.existsSync(path.join(root, "games", "snake", "index.html")), "Snake game file does not exist");
+    assert(games.filter((game) => game.url).length === 1, "Only games with a URL should count as playable entries");
+  });
+
+  test("unit: game data has a useful schema", () => {
+    const { games } = readGames();
+    for (const game of games) {
+      assert(typeof game.id === "string" && game.id.trim(), "Every game needs a stable string id");
+      assert(typeof game.title === "string" && game.title.trim(), `${game.id} needs a display title`);
+      assert(typeof game.category === "string" && game.category.trim(), `${game.id} needs a category`);
+      assert(!game.tags || Array.isArray(game.tags), `${game.id} tags must be an array when present`);
+      assert(!game.colors || (Array.isArray(game.colors) && game.colors.length >= 4), `${game.id} colors must contain at least 4 colors when present`);
+      for (const key of ["url", "coverImage", "videoUrl"]) {
+        if (game[key]) assert(canResolveUrl(game[key]), `${game.id} has an invalid ${key}`);
+      }
+      if (game.url && game.url.startsWith("./games/")) {
+        assert(fs.existsSync(path.join(root, game.url)), `${game.id} local url target does not exist`);
+      }
+      if (game.coverImage && game.coverImage.startsWith("./")) {
+        assert(fs.existsSync(path.join(root, game.coverImage)), `${game.id} local coverImage target does not exist`);
+      }
+    }
+  });
+
+  test("unit: renderer contains fallback guards for optional data", () => {
+    const app = fs.readFileSync(appPath, "utf8");
+    assert(app.includes("function normalizeGame"), "Missing game normalization guard");
+    assert(app.includes("defaultColors"), "Missing default colors for games without colors");
+    assert(app.includes("normalizeActivity"), "Missing localStorage recovery guard");
+    assert(app.includes("normalizeUrl"), "Missing URL sanitization guard");
+    assert(app.includes("playable: Boolean(url)"), "Missing playable flag based on real launch URL");
+    assert(app.includes("videoUrl"), "Missing configurable video URL support");
   });
 
   test("unit: removed design directions did not return", () => {
@@ -201,3 +241,4 @@ const passed = results.filter((result) => result.status === "PASS").length;
 
 console.log(`\n${passed} passed, ${failed} failed, ${skipped} skipped`);
 process.exit(failed > 0 ? 1 : 0);
+

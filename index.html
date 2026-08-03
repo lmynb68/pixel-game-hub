@@ -302,18 +302,20 @@
 
     .game-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 18px;
       align-items: start;
     }
 
     .game-card {
-      min-height: 208px;
+      min-height: 430px;
       display: flex;
       flex-direction: column;
-      border: 0;
-      background: transparent;
-      text-align: center;
+      padding: 14px;
+      border: 4px solid var(--shadow);
+      background: var(--paper);
+      box-shadow: 6px 6px 0 var(--shadow);
+      text-align: left;
     }
 
     .cover {
@@ -370,34 +372,102 @@
     }
 
     .card-body {
-      display: contents;
+      display: flex;
+      min-height: 0;
+      flex: 1;
+      flex-direction: column;
     }
 
     .card-head {
-      display: block;
-      min-height: 46px;
+      min-height: 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
     }
 
     .card-head h3 {
       margin: 0;
-      font-size: 15px;
+      font-size: 18px;
       line-height: 1.28;
       overflow-wrap: anywhere;
     }
 
-    .status,
-    .meta-row,
-    .desc,
-    .tag-row,
-    .activity,
     .card-spacer {
       display: none;
     }
 
+    .status {
+      flex: 0 0 auto;
+      padding: 4px 8px;
+      border: 3px solid var(--shadow);
+      background: var(--green);
+      box-shadow: 3px 3px 0 var(--shadow);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .meta-row,
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 2px 8px;
+      border: 3px solid var(--shadow);
+      background: #fff7d6;
+      box-shadow: 2px 2px 0 var(--shadow);
+      color: var(--muted);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .pill.pin {
+      background: var(--yellow);
+      color: var(--ink);
+    }
+
+    .desc {
+      display: -webkit-box;
+      min-height: 72px;
+      margin: 14px 0 0;
+      overflow: hidden;
+      color: var(--muted);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.7;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+    }
+
+    .activity {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px 12px;
+      margin-top: auto;
+      padding-top: 14px;
+      color: var(--muted);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
     .card-actions {
       display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
-      margin-top: 8px;
+      margin-top: 12px;
     }
 
     .play,
@@ -410,6 +480,11 @@
 
     .video {
       background: var(--paper);
+    }
+
+    .video:disabled {
+      cursor: not-allowed;
+      opacity: .6;
     }
 
     .empty {
@@ -492,8 +567,8 @@
       }
 
       .game-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px 10px;
+        grid-template-columns: 1fr;
+        gap: 16px;
       }
 
       .search-row {
@@ -526,7 +601,7 @@
     </section>
 
     <section class="workspace">
-      <aside class="launcher" aria-label="玩家状态">
+      <aside class="launcher" aria-label="玩家记录">
         <div class="titlebar"><span>PLAYER.LOG</span><span>--</span></div>
         <div class="launcher-body">
           <section class="side-block">
@@ -574,3 +649,4 @@
   <script src="./app.js"></script>
 </body>
 </html>
+

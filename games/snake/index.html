@@ -338,14 +338,16 @@
     }
 
     function createFood() {
-      let point;
-      do {
-        point = {
-          x: Math.floor(Math.random() * cells),
-          y: Math.floor(Math.random() * cells)
-        };
-      } while (snake.some((part) => part.x === point.x && part.y === point.y));
-      return point;
+      const freeCells = [];
+      for (let x = 0; x < cells; x += 1) {
+        for (let y = 0; y < cells; y += 1) {
+          if (!snake.some((part) => part.x === x && part.y === y)) {
+            freeCells.push({ x, y });
+          }
+        }
+      }
+      if (!freeCells.length) return null;
+      return freeCells[Math.floor(Math.random() * freeCells.length)];
     }
 
     function updateHud() {
@@ -401,21 +403,24 @@
       direction = nextDirection;
       const head = snake[0];
       const next = { x: head.x + direction.x, y: head.y + direction.y };
+      const grows = food && next.x === food.x && next.y === food.y;
 
       if (
         next.x < 0 ||
         next.y < 0 ||
         next.x >= cells ||
         next.y >= cells ||
-        snake.some((part) => part.x === next.x && part.y === next.y)
+        snake.some((part, index) => {
+          const isTail = index === snake.length - 1;
+          return !(isTail && !grows) && part.x === next.x && part.y === next.y;
+        })
       ) {
         endGame();
         return;
       }
 
       snake.unshift(next);
-      const ate = next.x === food.x && next.y === food.y;
-      if (ate) {
+      if (grows) {
         score += 10;
         if (score > best) {
           best = score;
@@ -427,6 +432,12 @@
           timer = setInterval(step, tickMs);
         }
         food = createFood();
+        if (!food) {
+          winGame();
+          updateHud();
+          draw();
+          return;
+        }
       } else {
         snake.pop();
       }
@@ -440,6 +451,13 @@
       running = false;
       clearInterval(timer);
       showOverlay("GAME OVER", `最终得分 ${score}。按 START 或 RESTART 再来一局。`);
+    }
+
+    function winGame() {
+      gameOver = true;
+      running = false;
+      clearInterval(timer);
+      showOverlay("YOU WIN", `整张地图都被你填满了，最终得分 ${score}。`);
     }
 
     function drawCell(x, y, color) {
@@ -463,7 +481,7 @@
         ctx.stroke();
       }
 
-      drawCell(food.x, food.y, "#ffe16a");
+      if (food) drawCell(food.x, food.y, "#ffe16a");
       snake.forEach((part, index) => drawCell(part.x, part.y, index === 0 ? "#70d6ff" : "#78c56f"));
     }
 
@@ -505,3 +523,4 @@
   </script>
 </body>
 </html>
+
