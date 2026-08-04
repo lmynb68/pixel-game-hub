@@ -1,20 +1,19 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
-const { spawnSync } = require("node:child_process");
 
 const root = path.resolve(__dirname, "..");
 const htmlPath = path.join(root, "index.html");
 const gamesPath = path.join(root, "games.json");
-const appPath = path.join(root, "app.js");
+const scriptPath = path.join(root, "script.js");
+const stylePath = path.join(root, "style.css");
 const snapshotPath = path.join(__dirname, "snapshots", "index.snapshot.json");
 const args = new Set(process.argv.slice(2));
 
 const runAll = args.size === 0;
 const wants = {
   unit: runAll || args.has("--unit"),
-  regression: runAll || args.has("--regression"),
-  e2e: args.has("--e2e"),
+  sourceSnapshot: runAll || args.has("--source-snapshot") || args.has("--regression"),
 };
 const updateSnapshot = args.has("--update-snapshot");
 
@@ -90,32 +89,23 @@ function getSnapshot(html) {
     title: (html.match(/<title>(.*?)<\/title>/i) || [])[1] || "",
     dataFileGames: games.length,
     categories: ["全部", ...new Set(games.map((game) => game.category))],
-    requiredChinese: ["像素桌面系统", "游戏启动器", "全部游戏"].filter((item) => text.includes(item)),
-    requiredScripts: ["app.js"].filter((item) => html.includes(item)),
+    requiredChinese: ["复古街机游戏厅", "街机小馆营业中", "全部游戏"].filter((item) => text.includes(item)),
+    requiredScripts: ["script.js"].filter((item) => html.includes(item)),
+    requiredStyles: ["style.css"].filter((item) => html.includes(item)),
     usesJsonData: fs.existsSync(gamesPath),
     cssHash: crypto
       .createHash("sha256")
-      .update((html.match(/<style>([\s\S]*?)<\/style>/i) || [])[1] || "")
+      .update(fs.existsSync(stylePath) ? fs.readFileSync(stylePath, "utf8") : "")
       .digest("hex"),
-    appHash: crypto
+    scriptHash: crypto
       .createHash("sha256")
-      .update(fs.existsSync(appPath) ? fs.readFileSync(appPath, "utf8") : "")
+      .update(fs.existsSync(scriptPath) ? fs.readFileSync(scriptPath, "utf8") : "")
       .digest("hex"),
     gamesHash: crypto
       .createHash("sha256")
       .update(fs.existsSync(gamesPath) ? fs.readFileSync(gamesPath, "utf8") : "")
       .digest("hex"),
   };
-}
-
-function findEdge() {
-  const candidates = [
-    "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
-    "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
-    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
-  ];
-  return candidates.find((candidate) => fs.existsSync(candidate));
 }
 
 if (wants.unit) {
@@ -128,7 +118,12 @@ if (wants.unit) {
     assert(html.includes("<main"), "Missing main content area");
     assert(!html.includes("./games.js"), "index.html should no longer load games.js");
     assert(fs.existsSync(gamesPath), "Missing games.json data file");
-    assert(html.includes("./app.js"), "Missing app render script");
+    assert(fs.existsSync(stylePath), "Missing style.css stylesheet");
+    assert(fs.existsSync(scriptPath), "Missing script.js render script");
+    assert(html.includes("./style.css"), "Missing style.css link");
+    assert(html.includes("./script.js"), "Missing script.js render script");
+    assert(!html.includes("<style>"), "index.html should not keep the main stylesheet inline");
+    assert(!html.includes("./app.js"), "index.html should no longer load app.js");
   });
 
   test("unit: major tags and CSS braces are balanced", () => {
@@ -143,31 +138,30 @@ if (wants.unit) {
   test("unit: pixel hub content contract is present", () => {
     const html = readHtml();
     const text = getTextContent(html);
-    for (const phrase of ["像素桌面系统", "游戏启动器", "当前目录", "全部游戏", "随机开玩"]) {
+    for (const phrase of ["复古街机游戏厅", "街机小馆营业中", "本店游戏单", "全部游戏", "随机游戏"]) {
       assert(text.includes(phrase), `Missing required phrase: ${phrase}`);
     }
-    assert(html.includes('placeholder="搜索游戏、类型、标签"'), "Missing search input placeholder");
+    assert(html.includes('placeholder="搜索游戏、玩法、标签"'), "Missing search input placeholder");
   });
 
   test("unit: game data can drive the shelf automatically", () => {
     const { games, overrides } = readGames();
-    assert(games.length === 17, `Expected 17 games, got ${games.length}`);
+    assert(games.length > 0, "Expected at least one game");
     assert(games.every((game) => game.id && game.title && game.category && game.status), "Every game needs id, title, category, and status");
     assert(new Set(games.map((game) => game.id)).size === games.length, "Game ids must be unique");
     assert(overrides && typeof overrides === "object", "GAME_CUSTOM_OVERRIDES must exist");
-    const localGameIds = new Set(games.filter((game) => game.url && game.url.startsWith("./games/")).map((game) => game.id));
-    const nonLocalGames = games.filter((game) => !localGameIds.has(game.id));
-    assert(nonLocalGames.every((game) => overrides[game.id]), "Every non-local game needs a customization entry");
-    assert(nonLocalGames.every((game) => Object.hasOwn(overrides[game.id], "title")), "Every customization entry needs title");
-    assert(nonLocalGames.every((game) => Object.hasOwn(overrides[game.id], "coverImage")), "Every customization entry needs coverImage");
-    assert(nonLocalGames.every((game) => Object.hasOwn(overrides[game.id], "description")), "Every customization entry needs description");
-    for (const category of ["经典街机", "动作平台", "音乐节奏", "模拟经营", "类幸存者", "横版卷轴", "休闲益智"]) {
-      assert(games.some((game) => game.category === category), `Missing category: ${category}`);
-    }
+    const pendingGames = games.filter((game) => !game.url);
+    const playableGames = games.filter((game) => game.url);
+    assert(playableGames.length > 0, "At least one game should have a playable URL");
+    assert(pendingGames.every((game) => game.status === "待接入"), "Games without a URL should be marked 待接入");
+    assert(pendingGames.every((game) => overrides[game.id]), "Every pending game needs a customization entry");
+    assert(pendingGames.every((game) => Object.hasOwn(overrides[game.id], "title")), "Every customization entry needs title");
+    assert(pendingGames.every((game) => Object.hasOwn(overrides[game.id], "coverImage")), "Every customization entry needs coverImage");
+    assert(pendingGames.every((game) => Object.hasOwn(overrides[game.id], "description")), "Every customization entry needs description");
+    assert(new Set(games.map((game) => game.category)).size > 1, "Game data should expose more than one category");
     const snake = games.find((game) => game.id === "pixel-snake");
     assert(snake && snake.url === "./games/snake/index.html", "Snake game must be linked from data");
     assert(fs.existsSync(path.join(root, "games", "snake", "index.html")), "Snake game file does not exist");
-    assert(games.filter((game) => game.url).length === 1, "Only games with a URL should count as playable entries");
   });
 
   test("unit: game data has a useful schema", () => {
@@ -191,13 +185,21 @@ if (wants.unit) {
   });
 
   test("unit: renderer contains fallback guards for optional data", () => {
-    const app = fs.readFileSync(appPath, "utf8");
-    assert(app.includes("function normalizeGame"), "Missing game normalization guard");
-    assert(app.includes("defaultColors"), "Missing default colors for games without colors");
-    assert(app.includes("normalizeActivity"), "Missing localStorage recovery guard");
-    assert(app.includes("normalizeUrl"), "Missing URL sanitization guard");
-    assert(app.includes("playable: Boolean(url)"), "Missing playable flag based on real launch URL");
-    assert(app.includes("videoUrl"), "Missing configurable video URL support");
+    const script = fs.readFileSync(scriptPath, "utf8");
+    assert(script.includes("function normalizeGame"), "Missing game normalization guard");
+    assert(script.includes("defaultColors"), "Missing default colors for games without colors");
+    assert(script.includes("normalizeActivity"), "Missing localStorage recovery guard");
+    assert(script.includes("normalizeUrl"), "Missing URL sanitization guard");
+    assert(script.includes("playable: Boolean(url)"), "Missing playable flag based on real launch URL");
+    assert(script.includes("videoUrl"), "Missing configurable video URL support");
+  });
+
+  test("unit: official Toy upload structure exists", () => {
+    const html = readHtml();
+    assert(fs.existsSync(path.join(root, "images")), "Missing images resource directory");
+    assert(html.includes('<link rel="stylesheet" href="./style.css">'), "index.html should link root style.css");
+    assert(html.includes('<script src="./script.js"></script>'), "index.html should load root script.js");
+    assert(!fs.existsSync(path.join(root, "app.js")), "Old app.js should be renamed to script.js");
   });
 
   test("unit: removed design directions did not return", () => {
@@ -208,8 +210,8 @@ if (wants.unit) {
   });
 }
 
-if (wants.regression) {
-  test("regression: page snapshot matches expected content", () => {
+if (wants.sourceSnapshot) {
+  test("source snapshot: page source contract matches expected content", () => {
     const html = readHtml();
     const actual = getSnapshot(html);
     if (updateSnapshot) {
@@ -220,13 +222,7 @@ if (wants.regression) {
     }
     assert(fs.existsSync(snapshotPath), "Missing regression snapshot");
     const expected = JSON.parse(fs.readFileSync(snapshotPath, "utf8"));
-    assert(JSON.stringify(actual, null, 2) === JSON.stringify(expected, null, 2), "Snapshot changed. Review the page and update tests/snapshots/index.snapshot.json if intentional.");
-  });
-}
-
-if (wants.e2e) {
-  test("e2e: browser can load the local page and expose expected DOM text", () => {
-    return { skip: true, reason: "games.json 需要本地服务器读取；请用 npm run test:playwright 做完整浏览器检查" };
+    assert(JSON.stringify(actual, null, 2) === JSON.stringify(expected, null, 2), "Source snapshot changed. Review the page and update tests/snapshots/index.snapshot.json if intentional.");
   });
 }
 

@@ -4,7 +4,8 @@
   const defaultColors = ["#70d6ff", "#ffe16a", "#202033", "#79d67a"];
   const defaultCategory = "未分类";
   const onlineStatus = "已上线";
-  const playableStatus = "可试玩";
+  const playableStatus = "可开玩";
+  const pendingStatus = "即将开放";
   const state = {
     filter: "全部",
     query: "",
@@ -23,6 +24,7 @@
     grid: document.querySelector("#game-grid"),
     title: document.querySelector("#list-title"),
     folderCount: document.querySelector("#folder-count"),
+    searchForm: document.querySelector("#search-form"),
     search: document.querySelector("#search-input"),
     random: document.querySelector("#random-button")
   };
@@ -99,7 +101,7 @@
     if (!url) return "";
     try {
       const resolved = new URL(url, window.location.href);
-      return ["http:", "https:", "file:"].includes(resolved.protocol) ? url : "";
+      return ["http:", "https:"].includes(resolved.protocol) ? url : "";
     } catch {
       return "";
     }
@@ -147,13 +149,13 @@
   function renderStats() {
     els.total.textContent = games.length;
     els.playable.textContent = playableGames().length;
-    els.building.textContent = games.filter((game) => game.status !== onlineStatus).length;
+    els.building.textContent = games.filter((game) => game.status !== onlineStatus && !game.playable).length;
 
     const recent = state.activity.recent.slice(0, 4);
-    els.recentCount.textContent = `${recent.length} 条记录`;
+    els.recentCount.textContent = `${recent.length} 次`;
     els.recentList.innerHTML = recent.length
       ? recent.map((item) => `<li>${escapeHtml(item.title)} · ${escapeHtml(item.timeLabel)}</li>`).join("")
-      : "<li>还没有游玩记录，先点一款试试。</li>";
+      : "<li>还没有开局记录，先挑一款试试。</li>";
 
     const top = games
       .map((game) => ({ game, clicks: clickCount(game) }))
@@ -161,10 +163,10 @@
 
     if (top && top.clicks > 0) {
       els.topClickLabel.textContent = `${top.clicks} 次`;
-      els.preferenceHint.textContent = `你最近最常点的是「${top.game.title}」，可以考虑把同类游戏放到首页更靠前的位置。`;
+      els.preferenceHint.textContent = `常玩榜首：「${top.game.title}」。准备好就再来一局。`;
     } else {
-      els.topClickLabel.textContent = "等待统计";
-      els.preferenceHint.textContent = "点击任意卡片后，这里会记录你的偏好。";
+      els.topClickLabel.textContent = "暂无记录";
+      els.preferenceHint.textContent = "还没有常玩游戏，先挑一款开局。";
     }
   }
 
@@ -182,11 +184,11 @@
     const visibleGames = filteredGames();
     els.title.textContent = state.filter === "全部" ? "全部游戏" : state.filter;
     if (els.folderCount) {
-      els.folderCount.textContent = `${visibleGames.length} ITEMS`;
+      els.folderCount.textContent = `${visibleGames.length} 款`;
     }
 
     if (!visibleGames.length) {
-      els.grid.innerHTML = `<div class="empty">没有找到匹配的游戏，换个关键词或分类试试。</div>`;
+      els.grid.innerHTML = `<div class="empty">暂时没找到这类游戏，换个关键词或玩法试试。</div>`;
       return;
     }
 
@@ -200,22 +202,22 @@
           <div class="card-body">
             <div class="card-head">
               <h3>${escapeHtml(game.title)}</h3>
-              <span class="status">${escapeHtml(game.playable ? playableStatus : game.status)}</span>
+              <span class="status">${escapeHtml(game.playable ? playableStatus : unavailableStatus(game))}</span>
             </div>
             <div class="meta-row">
               ${game.pinned ? '<span class="pill pin">置顶</span>' : ""}
               <span class="pill">${escapeHtml(game.category)}</span>
-              <span class="pill">上线 ${escapeHtml(game.releaseDate)}</span>
+              <span class="pill">入库 ${escapeHtml(game.releaseDate)}</span>
             </div>
             <p class="desc">${escapeHtml(game.description)}</p>
             <div class="card-spacer"></div>
             <div class="tag-row">${tagHtml}</div>
             <div class="activity">
-              <span>点击 ${clickCount(game)} 次</span>
-              <span>最近游玩 ${escapeHtml(lastPlayed(game))}</span>
+              <span>玩过 ${clickCount(game)} 次</span>
+              <span>最近开局 ${escapeHtml(lastPlayed(game))}</span>
             </div>
             <div class="card-actions">
-              <button class="play" type="button" data-action="play" data-game-id="${escapeHtml(game.id)}" ${game.playable ? "" : "disabled"}>${game.playable ? "开始游戏" : "待接入"}</button>
+              <button class="play" type="button" data-action="play" data-game-id="${escapeHtml(game.id)}" ${game.playable ? "" : "disabled"}>${game.playable ? "开始游戏" : "即将开放"}</button>
               <button class="video" type="button" data-action="video" data-game-id="${escapeHtml(game.id)}" ${game.videoUrl ? "" : "disabled"}>${game.videoUrl ? "查看视频" : "暂无视频"}</button>
             </div>
           </div>
@@ -230,6 +232,10 @@
       const image = cover.dataset.coverImage;
       if (image) cover.style.backgroundImage = `url("${image.replace(/["\\]/g, "\\$&")}")`;
     });
+  }
+
+  function unavailableStatus(game) {
+    return game.playable ? playableStatus : pendingStatus;
   }
 
   function render() {
@@ -281,6 +287,12 @@
     renderCards();
   });
 
+  els.searchForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    state.query = els.search.value;
+    renderCards();
+  });
+
   els.random.addEventListener("click", () => {
     const pool = playableGames();
     const game = pool[Math.floor(Math.random() * pool.length)];
@@ -292,9 +304,21 @@
 
   try {
     games = await loadGames();
+    syncActivityWithGames();
     render();
   } catch (error) {
     els.grid.innerHTML = `<div class="empty">${escapeHtml(error.message)}。如果你是双击打开 HTML，请改用本地服务器打开页面。</div>`;
+  }
+
+  function syncActivityWithGames() {
+    const gameIds = new Set(games.map((game) => game.id));
+    const clicks = {};
+    for (const [id, value] of Object.entries(state.activity.clicks)) {
+      if (gameIds.has(id)) clicks[id] = value;
+    }
+    state.activity.clicks = clicks;
+    state.activity.recent = state.activity.recent.filter((item) => gameIds.has(item.id));
+    saveActivity();
   }
 })();
 

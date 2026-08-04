@@ -1,5 +1,5 @@
 {
-  "title": "Pixel Game Hub - 复古像素游戏厅",
+  "title": "街机收藏馆 - 街机小馆营业中",
   "dataFileGames": 17,
   "categories": [
     "全部",
@@ -12,16 +12,19 @@
     "休闲益智"
   ],
   "requiredChinese": [
-    "像素桌面系统",
-    "游戏启动器",
+    "复古街机游戏厅",
+    "街机小馆营业中",
     "全部游戏"
   ],
   "requiredScripts": [
-    "app.js"
+    "script.js"
+  ],
+  "requiredStyles": [
+    "style.css"
   ],
   "usesJsonData": true,
-  "cssHash": "bcefadd630dc12ed1ddd230453d811a27dd9c76a62e4b2b8ac35a6cb771030b8",
-  "appHash": "e0e53155ec8bf8975d562fe145e787e3d44919f0b05fbb990f1f4b3e39fb8e69",
-  "gamesHash": "bc6942ebed1a09fe7ecef2b9b91030d5744748f4d005c12cc4553a5c2cbd06c5"
+  "cssHash": "e650fc1bff46458e2a53d301985d02648faaf1ecb55b505b0d76885bf97c9bb2",
+  "scriptHash": "45af9e5157c3cced838b2b7264c0737b5c0e1f5c5d4c8123683a20e68739ce5a",
+  "gamesHash": "348bb7999c58088b4d9a145876b07d5c423a8e8655e0ad0404c12481f37e6428"
 }
 

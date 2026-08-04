@@ -1,9 +1,9 @@
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
+const { host, port } = require("./server-config");
 
 const root = path.resolve(__dirname, "..");
-const port = Number(process.env.PORT || 4173);
 
 const types = {
   ".html": "text/html; charset=utf-8",
@@ -17,7 +17,7 @@ const types = {
 };
 
 function resolveRequest(url) {
-  const pathname = decodeURIComponent(new URL(url, `http://localhost:${port}`).pathname);
+  const pathname = decodeURIComponent(new URL(url, `http://${host}:${port}`).pathname);
   const target = path.normalize(path.join(root, pathname === "/" ? "index.html" : pathname));
   if (!target.startsWith(root)) return null;
   return target;
@@ -37,7 +37,7 @@ http.createServer((request, response) => {
     "Cache-Control": "no-store"
   });
   fs.createReadStream(target).pipe(response);
-}).listen(port, "127.0.0.1", () => {
-  console.log(`Pixel Game Hub server running at http://127.0.0.1:${port}`);
+}).listen(port, host, () => {
+  console.log(`Pixel Game Hub server running at http://${host}:${port}`);
 });
 

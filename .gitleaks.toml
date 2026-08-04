@@ -1,0 +1,12 @@
+title = "Pixel Game Hub secret scanning"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Ignore generated local test artifacts."
+paths = [
+  '''^playwright-report/''',
+  '''^test-results/''',
+  '''^\.browser-e2e-profile/'''
+]

@@ -8,9 +8,11 @@
     "format:check": "node tests/format.js --check",
     "test": "node tests/run-tests.js && node tests/run-playwright.js",
     "test:unit": "node tests/run-tests.js --unit",
-    "test:regression": "node tests/run-tests.js --regression",
+    "test:source-snapshot": "node tests/run-tests.js --source-snapshot",
+    "test:regression": "node tests/run-tests.js --source-snapshot",
     "test:e2e": "node tests/run-playwright.js",
-    "test:playwright": "node tests/run-playwright.js"
+    "test:playwright": "node tests/run-playwright.js",
+    "secrets:scan": "gitleaks git --redact --config .gitleaks.toml ."
   },
   "devDependencies": {
     "@playwright/test": "^1.62.0"

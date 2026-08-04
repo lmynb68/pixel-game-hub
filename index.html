@@ -3,634 +3,61 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pixel Game Hub - 复古像素游戏厅</title>
+  <title>街机收藏馆 - 街机小馆营业中</title>
   <link rel="icon" href="data:,">
-  <style>
-    :root {
-      --ink: #202033;
-      --panel: #fff7d6;
-      --paper: #fffdf0;
-      --blue: #68c7ff;
-      --blue-deep: #2d5ca8;
-      --yellow: #ffe16a;
-      --green: #79d67a;
-      --red: #ff6b6b;
-      --purple: #8c7cff;
-      --shadow: #202033;
-      --muted: #5b5a78;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      color: var(--ink);
-      background:
-        linear-gradient(90deg, rgba(255, 255, 255, .18) 1px, transparent 1px),
-        linear-gradient(rgba(255, 255, 255, .18) 1px, transparent 1px),
-        linear-gradient(135deg, #70d6ff 0%, #8c7cff 48%, #ff9f7a 100%);
-      background-size: 24px 24px, 24px 24px, auto;
-      font-family: "Courier New", "Microsoft YaHei", monospace;
-      letter-spacing: 0;
-      image-rendering: pixelated;
-    }
-
-    button,
-    input {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .desktop {
-      min-height: 100vh;
-      padding: 22px 22px 78px;
-      position: relative;
-    }
-
-    .top-window {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 18px;
-      align-items: center;
-      max-width: 1400px;
-      margin: 0 auto 18px;
-      border: 4px solid var(--shadow);
-      background: var(--panel);
-      box-shadow: 8px 8px 0 var(--shadow);
-    }
-
-    .titlebar {
-      grid-column: 1 / -1;
-      min-height: 42px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 0 12px;
-      color: #fff;
-      background: var(--blue-deep);
-      border-bottom: 4px solid var(--shadow);
-      font-weight: 900;
-    }
-
-    .lights {
-      display: flex;
-      gap: 8px;
-    }
-
-    .light {
-      width: 16px;
-      height: 16px;
-      border: 3px solid var(--shadow);
-      background: var(--yellow);
-    }
-
-    .light:nth-child(2) {
-      background: var(--green);
-    }
-
-    .light:nth-child(3) {
-      background: var(--red);
-    }
-
-    .hero-copy {
-      padding: 20px 24px 24px;
-    }
-
-    .kicker {
-      color: var(--blue-deep);
-      font-size: 14px;
-      font-weight: 900;
-    }
-
-    h1,
-    h2 {
-      margin: 8px 0 0;
-      line-height: 1;
-      font-weight: 900;
-    }
-
-    h1 {
-      font-size: clamp(34px, 6vw, 72px);
-      text-shadow: 5px 5px 0 var(--yellow);
-    }
-
-    .hero-copy p {
-      max-width: 720px;
-      margin: 18px 0 0;
-      color: var(--muted);
-      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      line-height: 1.75;
-    }
-
-    .status-dock {
-      display: grid;
-      grid-template-columns: repeat(3, 112px);
-      gap: 12px;
-      padding: 0 24px 24px 0;
-    }
-
-    .stat {
-      min-height: 92px;
-      display: grid;
-      place-items: center;
-      padding: 10px;
-      border: 4px solid var(--shadow);
-      background: var(--paper);
-      box-shadow: 5px 5px 0 var(--shadow);
-      text-align: center;
-      font-weight: 900;
-    }
-
-    .stat span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .stat strong {
-      display: block;
-      margin-top: 6px;
-      font-size: 30px;
-    }
-
-    .workspace {
-      display: grid;
-      grid-template-columns: 250px minmax(0, 1fr);
-      gap: 18px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    .launcher,
-    .folder-window {
-      border: 4px solid var(--shadow);
-      background: var(--panel);
-      box-shadow: 8px 8px 0 var(--shadow);
-    }
-
-    .launcher {
-      align-self: start;
-    }
-
-    .launcher-body {
-      padding: 16px;
-    }
-
-    .side-block + .side-block {
-      margin-top: 18px;
-      padding-top: 18px;
-      border-top: 4px dotted rgba(32, 32, 51, .18);
-    }
-
-    .side-title {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      font-weight: 900;
-    }
-
-    .side-title span {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .recent-list {
-      margin: 12px 0 0;
-      padding-left: 18px;
-      color: var(--muted);
-      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 1.7;
-    }
-
-    .hint {
-      margin-top: 12px;
-      padding: 12px;
-      border: 4px solid var(--shadow);
-      background: #d9fff2;
-      color: var(--muted);
-      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 1.65;
-    }
-
-    .window-body {
-      padding: 18px;
-    }
-
-    .toolbar {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 16px;
-      align-items: end;
-      margin-bottom: 16px;
-    }
-
-    .toolbar h2 {
-      font-size: clamp(30px, 4vw, 48px);
-      text-shadow: 4px 4px 0 var(--yellow);
-    }
-
-    .toolbar p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .search-row {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-    }
-
-    .search,
-    .random,
-    .filter,
-    .play,
-    .video {
-      border: 4px solid var(--shadow);
-      box-shadow: 4px 4px 0 var(--shadow);
-      font-weight: 900;
-    }
-
-    .search {
-      width: min(320px, 32vw);
-      min-height: 42px;
-      padding: 0 12px;
-      color: var(--ink);
-      background: var(--paper);
-      outline: none;
-    }
-
-    .random {
-      min-height: 42px;
-      padding: 0 14px;
-      color: var(--ink);
-      background: var(--green);
-    }
-
-    .filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .filter {
-      min-height: 38px;
-      padding: 0 14px;
-      color: var(--ink);
-      background: var(--paper);
-    }
-
-    .filter.active {
-      background: var(--yellow);
-    }
-
-    .game-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 18px;
-      align-items: start;
-    }
-
-    .game-card {
-      min-height: 430px;
-      display: flex;
-      flex-direction: column;
-      padding: 14px;
-      border: 4px solid var(--shadow);
-      background: var(--paper);
-      box-shadow: 6px 6px 0 var(--shadow);
-      text-align: left;
-    }
-
-    .cover {
-      width: 96px;
-      height: 84px;
-      margin: 0 auto 10px;
-      position: relative;
-      border: 4px solid var(--shadow);
-      background:
-        linear-gradient(180deg, var(--c1), var(--c2));
-      box-shadow: 6px 6px 0 var(--shadow);
-    }
-
-    .cover.has-image {
-      width: 124px;
-      height: 84px;
-      background-color: var(--paper);
-      background-position: center;
-      background-size: cover;
-    }
-
-    .cover::before {
-      content: "";
-      position: absolute;
-      left: -4px;
-      top: -20px;
-      width: 52px;
-      height: 24px;
-      border: 4px solid var(--shadow);
-      border-bottom: 0;
-      background: var(--yellow);
-    }
-
-    .cover.has-image::before {
-      display: none;
-    }
-
-    .sprite {
-      position: absolute;
-      left: 50%;
-      top: 54%;
-      width: 34px;
-      height: 34px;
-      transform: translate(-50%, -50%);
-      background: var(--sprite, var(--green));
-      box-shadow:
-        -14px 0 0 rgba(255, 255, 255, .75),
-        14px 0 0 rgba(255, 255, 255, .75),
-        0 14px 0 rgba(32, 32, 51, .35);
-    }
-
-    .cover.has-image .sprite {
-      display: none;
-    }
-
-    .card-body {
-      display: flex;
-      min-height: 0;
-      flex: 1;
-      flex-direction: column;
-    }
-
-    .card-head {
-      min-height: 0;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .card-head h3 {
-      margin: 0;
-      font-size: 18px;
-      line-height: 1.28;
-      overflow-wrap: anywhere;
-    }
-
-    .card-spacer {
-      display: none;
-    }
-
-    .status {
-      flex: 0 0 auto;
-      padding: 4px 8px;
-      border: 3px solid var(--shadow);
-      background: var(--green);
-      box-shadow: 3px 3px 0 var(--shadow);
-      font-size: 12px;
-      font-weight: 900;
-      white-space: nowrap;
-    }
-
-    .meta-row,
-    .tag-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      min-height: 28px;
-      padding: 2px 8px;
-      border: 3px solid var(--shadow);
-      background: #fff7d6;
-      box-shadow: 2px 2px 0 var(--shadow);
-      color: var(--muted);
-      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
-      font-size: 12px;
-      font-weight: 800;
-      line-height: 1.2;
-    }
-
-    .pill.pin {
-      background: var(--yellow);
-      color: var(--ink);
-    }
-
-    .desc {
-      display: -webkit-box;
-      min-height: 72px;
-      margin: 14px 0 0;
-      overflow: hidden;
-      color: var(--muted);
-      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 1.7;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
-    }
-
-    .activity {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 8px 12px;
-      margin-top: auto;
-      padding-top: 14px;
-      color: var(--muted);
-      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .card-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .play,
-    .video {
-      min-height: 34px;
-      color: var(--ink);
-      background: var(--blue);
-      font-size: 13px;
-    }
-
-    .video {
-      background: var(--paper);
-    }
-
-    .video:disabled {
-      cursor: not-allowed;
-      opacity: .6;
-    }
-
-    .empty {
-      grid-column: 1 / -1;
-      padding: 24px;
-      border: 4px dashed var(--shadow);
-      background: var(--paper);
-      color: var(--muted);
-      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-    }
-
-    .taskbar {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      min-height: 54px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 8px 18px;
-      border-top: 4px solid var(--shadow);
-      background: var(--panel);
-      z-index: 20;
-    }
-
-    .start-chip,
-    .task-chip {
-      min-height: 34px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 0 12px;
-      border: 4px solid var(--shadow);
-      background: var(--green);
-      box-shadow: 3px 3px 0 var(--shadow);
-      font-weight: 900;
-    }
-
-    .task-chip {
-      background: var(--paper);
-      color: var(--muted);
-    }
-
-    @media (max-width: 980px) {
-      .top-window,
-      .workspace,
-      .toolbar {
-        grid-template-columns: 1fr;
-      }
-
-      .status-dock {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        padding: 0 24px 24px;
-      }
-
-      .search-row {
-        justify-content: flex-start;
-      }
-
-      .search {
-        width: 100%;
-      }
-    }
-
-    @media (max-width: 620px) {
-      .desktop {
-        padding: 10px 10px 72px;
-      }
-
-      .status-dock {
-        grid-template-columns: 1fr;
-      }
-
-      .window-body {
-        padding: 12px;
-      }
-
-      .game-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-      }
-
-      .search-row {
-        flex-direction: column;
-      }
-
-      .taskbar {
-        font-size: 12px;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <main class="desktop">
     <section class="top-window">
       <div class="titlebar">
-        <span>PIXEL_OS / GAME_LIBRARY.EXE</span>
+        <span>街机收藏馆</span>
         <div class="lights"><span class="light"></span><span class="light"></span><span class="light"></span></div>
       </div>
       <div class="hero-copy">
-        <div class="kicker">像素桌面系统</div>
-        <h1>游戏启动器</h1>
-        <p>像老电脑桌面一样收纳小游戏：每个作品是一枚文件夹图标，分类像目录，点击开始就能进入本地游戏或外部网页。</p>
+        <div class="kicker">复古街机游戏厅</div>
+        <h1>街机小馆营业中</h1>
+        <p>挑一款小游戏开局，或者交给随机按钮。这里会慢慢收进更多有趣作品。</p>
+        <button class="random hero-random" id="random-button">随机游戏</button>
       </div>
       <div class="status-dock" aria-label="玩家状态">
-        <div class="stat"><span>已收录</span><strong id="total-count">0</strong></div>
-        <div class="stat"><span>可试玩</span><strong id="playable-count">0</strong></div>
-        <div class="stat"><span>开发中</span><strong id="building-count">0</strong></div>
+        <div class="stat"><span>馆藏游戏</span><strong id="total-count">0</strong></div>
+        <div class="stat"><span>马上能玩</span><strong id="playable-count">0</strong></div>
+        <div class="stat"><span>即将开放</span><strong id="building-count">0</strong></div>
       </div>
     </section>
 
     <section class="workspace">
       <aside class="launcher" aria-label="玩家记录">
-        <div class="titlebar"><span>PLAYER.LOG</span><span>--</span></div>
+        <div class="titlebar"><span>挑战记录</span><span>★</span></div>
         <div class="launcher-body">
           <section class="side-block">
-            <div class="side-title"><strong>最近游玩</strong><span id="recent-count">0 条记录</span></div>
+            <div class="side-title"><strong>最近开局</strong><span id="recent-count">0 次</span></div>
             <ul class="recent-list" id="recent-list">
-              <li>还没有游玩记录，先点一款试试。</li>
+              <li>还没有开局记录，先挑一款试试。</li>
             </ul>
           </section>
 
           <section class="side-block">
-            <div class="side-title"><strong>高频点击</strong><span id="top-click-label">等待统计</span></div>
-            <div class="hint" id="preference-hint">点击任意图标后，这里会记录你的偏好。</div>
+            <div class="side-title"><strong>常玩游戏</strong><span id="top-click-label">暂无记录</span></div>
+            <div class="hint" id="preference-hint">还没有常玩游戏，先挑一款开局。</div>
           </section>
         </div>
       </aside>
 
       <section class="folder-window">
-        <div class="titlebar"><span>GAMES_FOLDER</span><span id="folder-count">0 ITEMS</span></div>
+        <div class="titlebar"><span>街机游戏架</span><span id="folder-count">0 款</span></div>
         <div class="window-body">
           <header class="toolbar">
             <div>
-              <div class="kicker">当前目录</div>
+              <div class="kicker">本店游戏单</div>
               <h2 id="list-title">全部游戏</h2>
-              <p>用分类按钮切换目录，或搜索游戏名、类型和标签。</p>
+              <p>用分类按钮筛选街机类型，或搜索游戏名、玩法和标签。</p>
             </div>
-            <div class="search-row">
-              <input class="search" id="search-input" type="search" placeholder="搜索游戏、类型、标签">
-              <button class="random" id="random-button">随机开玩</button>
-            </div>
+            <form class="search-row" id="search-form" role="search">
+              <input class="search" id="search-input" type="search" placeholder="搜索游戏、玩法、标签">
+              <button class="search-submit" type="submit">搜索</button>
+            </form>
           </header>
 
           <nav class="filters" id="filters" aria-label="游戏类型筛选"></nav>
@@ -641,12 +68,12 @@
   </main>
 
   <footer class="taskbar">
-    <span class="start-chip">START</span>
-    <span class="task-chip">GAME_LIBRARY.EXE</span>
-    <span class="task-chip">READY</span>
+    <span class="start-chip">投币</span>
+    <span class="task-chip">街机大厅</span>
+    <span class="task-chip">营业中</span>
   </footer>
 
-  <script src="./app.js"></script>
+  <script src="./script.js"></script>
 </body>
 </html>
 

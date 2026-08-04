@@ -110,7 +110,7 @@
       "id": "silk-song-text",
       "category": "动作平台",
       "releaseDate": "2026-07-11",
-      "status": "已上线",
+      "status": "待接入",
       "pinned": true,
       "tags": [
         "文字",
@@ -119,7 +119,7 @@
       ],
       "clicks": 0,
       "lastPlayed": "",
-      "video": true,
+      "video": false,
       "colors": [
         "#ff4b2f",
         "#ffd15f",
@@ -131,7 +131,7 @@
       "id": "slime-jump",
       "category": "动作平台",
       "releaseDate": "2026-07-25",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "像素",
         "Q弹",
@@ -139,7 +139,7 @@
       ],
       "clicks": 0,
       "lastPlayed": "",
-      "video": true,
+      "video": false,
       "colors": [
         "#76b7f2",
         "#75d2c4",
@@ -151,7 +151,7 @@
       "id": "silk-hop",
       "category": "动作平台",
       "releaseDate": "2026-07-10",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "跳跳乐",
         "平台",
@@ -159,7 +159,7 @@
       ],
       "clicks": 0,
       "lastPlayed": "",
-      "video": true,
+      "video": false,
       "colors": [
         "#c9a07f",
         "#7b2d2c",
@@ -171,7 +171,7 @@
       "id": "bone-rhythm",
       "category": "音乐节奏",
       "releaseDate": "2026-07-08",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "节奏",
         "闪避",
@@ -179,7 +179,7 @@
       ],
       "clicks": 0,
       "lastPlayed": "",
-      "video": true,
+      "video": false,
       "colors": [
         "#1b2b64",
         "#8b6dff",
@@ -191,7 +191,7 @@
       "id": "noodle-stand",
       "category": "模拟经营",
       "releaseDate": "2026-07-03",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "经营",
         "料理",
@@ -199,7 +199,7 @@
       ],
       "clicks": 0,
       "lastPlayed": "",
-      "video": true,
+      "video": false,
       "colors": [
         "#b7c9b7",
         "#d17a45",
@@ -211,7 +211,7 @@
       "id": "idol-survivor",
       "category": "类幸存者",
       "releaseDate": "2026-06-28",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "弹幕",
         "升级",
@@ -219,7 +219,7 @@
       ],
       "clicks": 0,
       "lastPlayed": "",
-      "video": true,
+      "video": false,
       "colors": [
         "#4a1766",
         "#ff75c8",
@@ -231,7 +231,7 @@
       "id": "bamboo-runner",
       "category": "横版卷轴",
       "releaseDate": "2026-06-20",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "横版",
         "跑酷",
@@ -251,7 +251,7 @@
       "id": "lantern-match",
       "category": "休闲益智",
       "releaseDate": "2026-06-16",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "消除",
         "轻松",
@@ -259,7 +259,7 @@
       ],
       "clicks": 0,
       "lastPlayed": "",
-      "video": true,
+      "video": false,
       "colors": [
         "#f2a64b",
         "#e4566a",
@@ -271,7 +271,7 @@
       "id": "cloud-chess",
       "category": "休闲益智",
       "releaseDate": "2026-06-10",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "策略",
         "棋盘",
@@ -291,7 +291,7 @@
       "id": "ink-search",
       "category": "休闲益智",
       "releaseDate": "2026-06-05",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "解谜",
         "找物",
@@ -299,7 +299,7 @@
       ],
       "clicks": 0,
       "lastPlayed": "",
-      "video": true,
+      "video": false,
       "colors": [
         "#6c6f86",
         "#d8d0bd",
@@ -311,7 +311,7 @@
       "id": "dual-heroes",
       "category": "横版卷轴",
       "releaseDate": "2026-05-30",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "双人",
         "合作",
@@ -319,7 +319,7 @@
       ],
       "clicks": 0,
       "lastPlayed": "",
-      "video": true,
+      "video": false,
       "colors": [
         "#273b72",
         "#f8dd84",
@@ -331,7 +331,7 @@
       "id": "flower-word",
       "category": "休闲益智",
       "releaseDate": "2026-05-22",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "文字",
         "反应",
@@ -351,7 +351,7 @@
       "id": "tiny-farm",
       "category": "模拟经营",
       "releaseDate": "2026-05-16",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "种田",
         "放置",
@@ -359,7 +359,7 @@
       ],
       "clicks": 0,
       "lastPlayed": "",
-      "video": true,
+      "video": false,
       "colors": [
         "#76c66b",
         "#e8b45b",
@@ -371,7 +371,7 @@
       "id": "star-dodge",
       "category": "类幸存者",
       "releaseDate": "2026-05-08",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "闪避",
         "弹幕",
@@ -391,7 +391,7 @@
       "id": "gear-town",
       "category": "休闲益智",
       "releaseDate": "2026-04-30",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "机关",
         "推箱",
@@ -399,7 +399,7 @@
       ],
       "clicks": 0,
       "lastPlayed": "",
-      "video": true,
+      "video": false,
       "colors": [
         "#9f8660",
         "#6fd0ca",
@@ -411,7 +411,7 @@
       "id": "beast-race",
       "category": "横版卷轴",
       "releaseDate": "2026-04-18",
-      "status": "已上线",
+      "status": "待接入",
       "tags": [
         "竞速",
         "排行",

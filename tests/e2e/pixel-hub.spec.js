@@ -1,9 +1,26 @@
 const { test, expect } = require("@playwright/test");
+const { serverUrl } = require("../server-config");
+const gameData = require("../../games.json");
 
-const pageUrl = "http://127.0.0.1:4173/index.html";
-const snakeUrl = "http://127.0.0.1:4173/games/snake/index.html";
+const games = gameData.games.map((game) => ({
+  ...game,
+  ...((gameData.customOverrides || {})[game.id] || {})
+}));
+const playableGames = games.filter((game) => game.url);
+const pendingGames = games.filter((game) => !game.url);
+const categories = ["全部", ...new Set(games.map((game) => game.category))];
+const pageUrl = `${serverUrl}/index.html`;
+const playableGame = playableGames[0];
+const playableUrl = new URL(playableGame.url, pageUrl).href;
+const playableUrlPattern = new RegExp(playableGames
+  .map((game) => new URL(game.url, pageUrl).href.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+  .join("|"));
 
-test.describe("Pixel Game Hub", () => {
+function categoryCount(category) {
+  return category === "全部" ? games.length : games.filter((game) => game.category === category).length;
+}
+
+test.describe("街机收藏馆", () => {
   test.beforeEach(async ({ page }) => {
     const browserErrors = [];
     page.on("pageerror", (error) => browserErrors.push(error.message));
@@ -13,7 +30,7 @@ test.describe("Pixel Game Hub", () => {
 
     await page.goto(pageUrl);
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.locator(".game-card")).toHaveCount(17);
+    await expect(page.locator(".game-card")).toHaveCount(games.length);
 
     test.info().annotations.push({
       type: "browser-errors",
@@ -26,93 +43,104 @@ test.describe("Pixel Game Hub", () => {
   });
 
   test("loads the data-driven game shelf", async ({ page }) => {
-    await expect(page).toHaveTitle("Pixel Game Hub - 复古像素游戏厅");
-    await expect(page.getByRole("heading", { name: "游戏启动器" })).toBeVisible();
+    await expect(page).toHaveTitle("街机收藏馆 - 街机小馆营业中");
+    await expect(page.getByRole("heading", { name: "街机小馆营业中" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "全部游戏" })).toBeVisible();
-    await expect(page.locator("#total-count")).toHaveText("17");
-    await expect(page.locator("#playable-count")).toHaveText("1");
-    await expect(page.locator("#building-count")).toHaveText("0");
-    await expect(page.locator("#folder-count")).toHaveText("17 ITEMS");
-    await expect(page.locator(".game-card")).toHaveCount(17);
-    await expect(page.locator(".play")).toHaveCount(17);
-    await expect(page.locator(".play:not(:disabled)")).toHaveCount(1);
+    await expect(page.locator("#total-count")).toHaveText(String(games.length));
+    await expect(page.locator("#playable-count")).toHaveText(String(playableGames.length));
+    await expect(page.locator("#building-count")).toHaveText(String(pendingGames.length));
+    await expect(page.locator("#folder-count")).toHaveText(`${games.length} 款`);
+    await expect(page.locator(".game-card")).toHaveCount(games.length);
+    await expect(page.locator(".play")).toHaveCount(games.length);
+    await expect(page.locator(".play:not(:disabled)")).toHaveCount(playableGames.length);
   });
 
   test("shows each card's status, description, tags, and activity", async ({ page }) => {
-    const firstCard = page.locator(".game-card", { hasText: "像素贪吃蛇" });
+    const firstCard = page.locator(".game-card", { hasText: playableGame.title });
     await expect(firstCard.locator(".status")).toBeVisible();
-    await expect(firstCard.locator(".status")).toHaveText("可试玩");
+    await expect(firstCard.locator(".status")).toHaveText("可开玩");
     await expect(firstCard.locator(".desc")).toBeVisible();
-    await expect(firstCard.locator(".desc")).toContainText("经典贪吃蛇");
+    await expect(firstCard.locator(".desc")).toContainText(playableGame.description.slice(0, 6));
     await expect(firstCard.locator(".tag-row .pill").first()).toBeVisible();
     await expect(firstCard.locator(".activity")).toBeVisible();
-    await expect(firstCard.locator(".meta-row")).toContainText("经典街机");
+    await expect(firstCard.locator(".meta-row")).toContainText(playableGame.category);
   });
 
   test("automatically creates category filters from game data", async ({ page }) => {
-    for (const category of ["全部", "经典街机", "动作平台", "音乐节奏", "模拟经营", "类幸存者", "横版卷轴", "休闲益智"]) {
+    for (const category of categories) {
       await expect(page.locator("#filters").getByRole("button", { name: new RegExp(category) })).toBeVisible();
     }
 
-    await page.locator("#filters").getByRole("button", { name: /经典街机/ }).click();
-    await expect(page.getByRole("heading", { name: "经典街机" })).toBeVisible();
-    await expect(page.locator("#folder-count")).toHaveText("1 ITEMS");
-    await expect(page.locator(".game-card")).toHaveCount(1);
-    await expect(page.locator(".game-card")).toContainText("像素贪吃蛇");
+    await page.locator("#filters").getByRole("button", { name: new RegExp(playableGame.category) }).click();
+    await expect(page.getByRole("heading", { name: playableGame.category })).toBeVisible();
+    await expect(page.locator("#folder-count")).toHaveText(`${categoryCount(playableGame.category)} 款`);
+    await expect(page.locator(".game-card")).toHaveCount(categoryCount(playableGame.category));
+    await expect(page.locator(".game-card")).toContainText(playableGame.title);
 
-    await page.locator("#filters").getByRole("button", { name: /动作平台/ }).click();
-    await expect(page.getByRole("heading", { name: "动作平台" })).toBeVisible();
-    await expect(page.locator(".game-card")).toHaveCount(3);
-    await expect(page.locator(".game-card").first()).toContainText("动作平台");
-    await expect(page.locator(".game-card", { hasText: "飞起来文字版" }).getByRole("button", { name: "待接入" })).toBeDisabled();
+    if (pendingGames.length) {
+      const pendingGame = pendingGames[0];
+      await page.locator("#filters").getByRole("button", { name: /全部/ }).click();
+      await expect(page.locator(".game-card", { hasText: pendingGame.title }).getByRole("button", { name: "即将开放" })).toBeDisabled();
+    }
   });
 
   test("search narrows the automatically rendered cards", async ({ page }) => {
-    const search = page.getByPlaceholder("搜索游戏、类型、标签");
-    await search.fill("史莱姆");
+    const searchGame = games.find((game) => game.id !== playableGame.id) || playableGame;
+    const search = page.getByPlaceholder("搜索游戏、玩法、标签");
+    const searchButton = page.getByRole("button", { name: "搜索" });
+    await expect(searchButton).toBeVisible();
+    await search.fill(searchGame.title);
+    await searchButton.click();
     await expect(page.locator(".game-card")).toHaveCount(1);
-    await expect(page.locator(".game-card")).toContainText("跳跳史莱姆");
+    await expect(page.locator(".game-card")).toContainText(searchGame.title);
 
     await search.fill("不存在的游戏");
+    await searchButton.click();
     await expect(page.locator(".empty")).toBeVisible();
   });
 
-  test("opens the real snake game from the shelf", async ({ page }) => {
-    await page.locator(".game-card", { hasText: "像素贪吃蛇" }).getByRole("button", { name: "开始游戏" }).click();
-    await expect(page).toHaveURL(/games\/snake\/index\.html$/);
-    await expect(page).toHaveTitle("像素贪吃蛇");
-    await expect(page.getByText("功能清单")).toBeVisible();
+  test("opens the real playable game from the shelf", async ({ page }) => {
+    await page.locator(".game-card", { hasText: playableGame.title }).getByRole("button", { name: "开始游戏" }).click();
+    await expect(page).toHaveURL(playableUrl);
+    await expect(page).toHaveTitle(playableGame.title);
+    await expect(page.getByText("玩法提示")).toBeVisible();
+    await expect(page.getByText("已实现")).toHaveCount(0);
     await expect(page.locator("#board")).toBeVisible();
   });
 
   test("clicking a game records player state", async ({ page }) => {
-    await page.locator(".game-card", { hasText: "像素贪吃蛇" }).getByRole("button", { name: "开始游戏" }).click();
+    await page.locator(".game-card", { hasText: playableGame.title }).getByRole("button", { name: "开始游戏" }).click();
     await page.goto(pageUrl);
-    await expect(page.locator("#recent-count")).toHaveText("1 条记录");
-    await expect(page.locator("#recent-list")).toContainText("像素贪吃蛇");
+    await expect(page.locator("#recent-count")).toHaveText("1 次");
+    await expect(page.locator("#recent-list")).toContainText(playableGame.title);
     await expect(page.locator("#top-click-label")).toHaveText("1 次");
-    await expect(page.locator("#preference-hint")).toContainText("像素贪吃蛇");
+    await expect(page.locator("#preference-hint")).toContainText(playableGame.title);
+    await expect(page.locator("#preference-hint")).toContainText("常玩榜首");
+    await expect(page.locator("#preference-hint")).not.toContainText("记住");
+    await expect(page.locator("#preference-hint")).not.toContainText("这里");
   });
 
   test("random launch records a playable game without breaking the shelf", async ({ page }) => {
-    await page.getByRole("button", { name: "随机开玩" }).click();
-    await expect(page).toHaveURL(/games\/snake\/index\.html$/);
+    await page.getByRole("button", { name: "随机游戏" }).click();
+    await expect(page).toHaveURL(playableUrlPattern);
     await page.goto(pageUrl);
-    await expect(page.locator("#recent-list")).toContainText("像素贪吃蛇");
+    await expect(page.locator("#recent-count")).toHaveText("1 次");
   });
 
-  test("video controls are explicit when no video URL is configured", async ({ page }) => {
-    await expect(page.locator(".video")).toHaveCount(17);
-    await expect(page.locator(".video").first()).toBeDisabled();
-    await expect(page.locator(".video").first()).toHaveText("暂无视频");
+  test("video controls reflect configured video URLs", async ({ page }) => {
+    const videoGames = games.filter((game) => game.videoUrl);
+    await expect(page.locator(".video")).toHaveCount(games.length);
+    await expect(page.locator(".video:not(:disabled)")).toHaveCount(videoGames.length);
+    await expect(page.locator(".video:disabled")).toHaveCount(games.length - videoGames.length);
   });
 
   test("exposes basic accessible structure and named controls", async ({ page }) => {
     await expect(page.locator("main")).toBeVisible();
     await expect(page.locator('[aria-label="玩家状态"]')).toBeVisible();
     await expect(page.locator('[aria-label="游戏类型筛选"]')).toBeVisible();
-    await expect(page.getByPlaceholder("搜索游戏、类型、标签")).toBeVisible();
-    await expect(page.getByRole("button", { name: "随机开玩" })).toBeVisible();
+    await expect(page.getByPlaceholder("搜索游戏、玩法、标签")).toBeVisible();
+    await expect(page.getByRole("button", { name: "搜索" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "随机游戏" })).toBeVisible();
   });
 
   test("has usable layout at the current viewport", async ({ page }, testInfo) => {
@@ -140,7 +168,7 @@ test.describe("Pixel Game Hub", () => {
   });
 });
 
-test.describe("Pixel Game Hub resilience", () => {
+test.describe("街机收藏馆 resilience", () => {
   test("recovers when saved player state is corrupted", async ({ page }) => {
     const browserErrors = [];
     page.on("pageerror", (error) => browserErrors.push(error.message));
@@ -153,9 +181,22 @@ test.describe("Pixel Game Hub resilience", () => {
     });
     await page.goto(pageUrl);
 
-    await expect(page.locator(".game-card")).toHaveCount(17);
-    await expect(page.locator("#recent-count")).toHaveText("0 条记录");
+    await expect(page.locator(".game-card")).toHaveCount(games.length);
+    await expect(page.locator("#recent-count")).toHaveText("0 次");
     expect(browserErrors).toEqual([]);
+  });
+
+  test("drops stale saved player state for removed games", async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem("pixel-game-hub-state", JSON.stringify({
+        clicks: { "ghost-game": 9 },
+        recent: [{ id: "ghost-game", title: "已经删除的游戏", timeLabel: "12:00" }]
+      }));
+    });
+    await page.goto(pageUrl);
+
+    await expect(page.locator("#recent-count")).toHaveText("0 次");
+    await expect(page.locator("#recent-list")).not.toContainText("已经删除的游戏");
   });
 
   test("renders incomplete game data with safe defaults", async ({ page }) => {
@@ -226,8 +267,8 @@ test.describe("Pixel Game Hub resilience", () => {
 
 test.describe("Snake game", () => {
   test("starts, pauses, restarts, and exposes core HUD", async ({ page }) => {
-    await page.goto(snakeUrl);
-    await expect(page).toHaveTitle("像素贪吃蛇");
+    await page.goto(playableUrl);
+    await expect(page).toHaveTitle(playableGame.title);
     await expect(page.locator("#score")).toHaveText("0");
     await expect(page.locator("#best")).toBeVisible();
     await expect(page.locator("#speed")).toHaveText("1");

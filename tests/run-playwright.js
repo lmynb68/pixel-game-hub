@@ -1,25 +1,45 @@
 const http = require("node:http");
+const net = require("node:net");
 const path = require("node:path");
 const { spawn } = require("node:child_process");
+const { host, defaultPort, getServerUrl } = require("./server-config");
 
 const root = path.resolve(__dirname, "..");
 const serverPath = path.join(__dirname, "static-server.js");
 const playwrightCli = path.join(root, "node_modules", "playwright", "cli.js");
-const port = Number(process.env.PORT || 4173);
-const url = `http://127.0.0.1:${port}`;
 const args = ["test", ...process.argv.slice(2)];
+let port;
+let serverUrl;
+
+function findOpenPort(startPort = defaultPort) {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.unref();
+    server.on("error", (error) => {
+      if (error.code === "EADDRINUSE") {
+        findOpenPort(startPort + 1).then(resolve, reject);
+        return;
+      }
+      reject(error);
+    });
+    server.listen(startPort, host, () => {
+      const address = server.address();
+      server.close(() => resolve(address.port));
+    });
+  });
+}
 
 function waitForServer(deadlineMs = 10000) {
   const started = Date.now();
   return new Promise((resolve, reject) => {
     function probe() {
-      const request = http.get(url, (response) => {
+      const request = http.get(serverUrl, (response) => {
         response.resume();
         resolve();
       });
       request.on("error", () => {
         if (Date.now() - started > deadlineMs) {
-          reject(new Error(`Local test server did not start at ${url}`));
+          reject(new Error(`Local test server did not start at ${serverUrl}`));
           return;
         }
         setTimeout(probe, 150);
@@ -33,9 +53,12 @@ function waitForServer(deadlineMs = 10000) {
 }
 
 async function main() {
+  port = process.env.PORT ? Number(process.env.PORT) : await findOpenPort();
+  serverUrl = getServerUrl(port);
+  const childEnv = { ...process.env, PORT: String(port) };
   const server = spawn(process.execPath, [serverPath], {
     cwd: root,
-    env: { ...process.env, PORT: String(port) },
+    env: childEnv,
     stdio: "ignore",
     windowsHide: true,
   });
@@ -46,7 +69,7 @@ async function main() {
     exitCode = await new Promise((resolve) => {
       const child = spawn(process.execPath, [playwrightCli, ...args], {
         cwd: root,
-        env: process.env,
+        env: childEnv,
         stdio: "inherit",
         windowsHide: true,
       });

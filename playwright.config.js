@@ -1,4 +1,5 @@
 const { defineConfig, devices } = require("@playwright/test");
+const { serverUrl } = require("./tests/server-config");
 
 module.exports = defineConfig({
   testDir: "./tests/e2e",
@@ -14,7 +15,7 @@ module.exports = defineConfig({
   },
   webServer: {
     command: "node tests/static-server.js",
-    url: "http://127.0.0.1:4173",
+    url: serverUrl,
     reuseExistingServer: true,
     timeout: 10000,
   },

@@ -3,3 +3,18 @@ test-results/
 playwright-report/
 .browser-e2e-profile/
 .edge-check-*/
+
+# Local credentials and machine-specific secrets
+.env
+.env.*
+!.env.example
+.npmrc
+*.pem
+*.key
+id_rsa
+id_ed25519
+credentials*
+cookies*
+session*
+token*
+secret*

@@ -8,6 +8,7 @@ const jsFiles = [];
 const jsonFiles = [];
 const htmlFiles = [];
 const workflowFiles = [];
+const tomlFiles = [];
 const failures = [];
 
 function walk(dir) {
@@ -22,6 +23,7 @@ function walk(dir) {
     if (entry.name.endsWith(".json")) jsonFiles.push(fullPath);
     if (entry.name.endsWith(".html")) htmlFiles.push(fullPath);
     if (entry.name.endsWith(".yml") || entry.name.endsWith(".yaml")) workflowFiles.push(fullPath);
+    if (entry.name.endsWith(".toml")) tomlFiles.push(fullPath);
   }
 }
 
@@ -69,6 +71,20 @@ function lintWorkflow(file) {
   for (const required of ["npm ci", "npm run lint", "npm run format:check", "npm test"]) {
     if (!text.includes(required)) fail(file, `missing CI step: ${required}`);
   }
+  if (relative(file) === ".github/workflows/ci.yml") {
+    for (const required of ["gitleaks/gitleaks-action@v2", "fetch-depth: 0", "GITLEAKS_CONFIG: .gitleaks.toml"]) {
+      if (!text.includes(required)) fail(file, `missing Gitleaks CI setting: ${required}`);
+    }
+  }
+}
+
+function lintToml(file) {
+  const text = fs.readFileSync(file, "utf8");
+  if (relative(file) === ".gitleaks.toml") {
+    for (const required of ["[extend]", "useDefault = true", "[[allowlists]]"]) {
+      if (!text.includes(required)) fail(file, `missing Gitleaks config setting: ${required}`);
+    }
+  }
 }
 
 walk(root);
@@ -76,6 +92,7 @@ jsFiles.forEach(lintJavaScript);
 jsonFiles.forEach(lintJson);
 htmlFiles.forEach(lintHtml);
 workflowFiles.forEach(lintWorkflow);
+tomlFiles.forEach(lintToml);
 
 if (failures.length) {
   console.error("Lint failed:");
@@ -83,5 +100,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Lint passed: ${jsFiles.length} JS, ${jsonFiles.length} JSON, ${htmlFiles.length} HTML, ${workflowFiles.length} workflow files`);
+console.log(`Lint passed: ${jsFiles.length} JS, ${jsonFiles.length} JSON, ${htmlFiles.length} HTML, ${workflowFiles.length} workflow files, ${tomlFiles.length} TOML files`);
 
