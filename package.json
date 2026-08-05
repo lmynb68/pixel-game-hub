@@ -12,7 +12,8 @@
     "test:regression": "node tests/run-tests.js --source-snapshot",
     "test:e2e": "node tests/run-playwright.js",
     "test:playwright": "node tests/run-playwright.js",
-    "secrets:scan": "gitleaks git --redact --config .gitleaks.toml ."
+    "secrets:scan": "gitleaks git --redact --config .gitleaks.toml .",
+    "game:import": "node scripts/import-game.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.0"

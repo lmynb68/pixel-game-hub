@@ -1,9 +1,9 @@
 {
-  "title": "街机收藏馆 - 街机小馆营业中",
+  "title": "GodotMaker 收藏馆 - 原型 / DEMO 展示",
   "dataFileGames": 17,
   "categories": [
     "全部",
-    "经典街机",
+    "经典原型",
     "动作平台",
     "音乐节奏",
     "模拟经营",
@@ -12,9 +12,9 @@
     "休闲益智"
   ],
   "requiredChinese": [
-    "复古街机游戏厅",
-    "街机小馆营业中",
-    "全部游戏"
+    "原型 / DEMO 展示页",
+    "GodotMaker 收藏馆",
+    "全部作品"
   ],
   "requiredScripts": [
     "script.js"
@@ -23,8 +23,8 @@
     "style.css"
   ],
   "usesJsonData": true,
-  "cssHash": "e650fc1bff46458e2a53d301985d02648faaf1ecb55b505b0d76885bf97c9bb2",
-  "scriptHash": "45af9e5157c3cced838b2b7264c0737b5c0e1f5c5d4c8123683a20e68739ce5a",
-  "gamesHash": "348bb7999c58088b4d9a145876b07d5c423a8e8655e0ad0404c12481f37e6428"
+  "cssHash": "4d465171517d595db884704cd7831529dc946e54b57483e670ba3e4a10df5578",
+  "scriptHash": "e90d8fb80a9e0e86b1e2540df85832ea555bb57390e04ace1f17aefc62fbffb6",
+  "gamesHash": "ebacb861ee64fd2e4c5208801b2b8fab27ecd684449270ecb8c456ebcaa33160"
 }
 

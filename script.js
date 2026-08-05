@@ -182,7 +182,7 @@
 
   function renderCards() {
     const visibleGames = filteredGames();
-    els.title.textContent = state.filter === "全部" ? "全部游戏" : state.filter;
+    els.title.textContent = state.filter === "全部" ? "全部作品" : state.filter;
     if (els.folderCount) {
       els.folderCount.textContent = `${visibleGames.length} 款`;
     }

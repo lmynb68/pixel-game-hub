@@ -1,6 +1,8 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
+const os = require("node:os");
+const { importGame, slugify } = require("../scripts/import-game");
 
 const root = path.resolve(__dirname, "..");
 const htmlPath = path.join(root, "index.html");
@@ -89,7 +91,7 @@ function getSnapshot(html) {
     title: (html.match(/<title>(.*?)<\/title>/i) || [])[1] || "",
     dataFileGames: games.length,
     categories: ["全部", ...new Set(games.map((game) => game.category))],
-    requiredChinese: ["复古街机游戏厅", "街机小馆营业中", "全部游戏"].filter((item) => text.includes(item)),
+    requiredChinese: ["原型 / DEMO 展示页", "GodotMaker 收藏馆", "全部作品"].filter((item) => text.includes(item)),
     requiredScripts: ["script.js"].filter((item) => html.includes(item)),
     requiredStyles: ["style.css"].filter((item) => html.includes(item)),
     usesJsonData: fs.existsSync(gamesPath),
@@ -138,7 +140,7 @@ if (wants.unit) {
   test("unit: pixel hub content contract is present", () => {
     const html = readHtml();
     const text = getTextContent(html);
-    for (const phrase of ["复古街机游戏厅", "街机小馆营业中", "本店游戏单", "全部游戏", "随机游戏"]) {
+    for (const phrase of ["原型 / DEMO 展示页", "GodotMaker 收藏馆", "原型 / DEMO", "全部作品", "随机游戏"]) {
       assert(text.includes(phrase), `Missing required phrase: ${phrase}`);
     }
     assert(html.includes('placeholder="搜索游戏、玩法、标签"'), "Missing search input placeholder");
@@ -192,6 +194,38 @@ if (wants.unit) {
     assert(script.includes("normalizeUrl"), "Missing URL sanitization guard");
     assert(script.includes("playable: Boolean(url)"), "Missing playable flag based on real launch URL");
     assert(script.includes("videoUrl"), "Missing configurable video URL support");
+  });
+
+  test("unit: import script registers a complete local demo package", () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "godotmaker-import-"));
+    const source = path.join(tempRoot, "incoming", "new-demo");
+    fs.mkdirSync(source, { recursive: true });
+    fs.mkdirSync(path.join(tempRoot, "games"), { recursive: true });
+    fs.mkdirSync(path.join(tempRoot, "images"), { recursive: true });
+    fs.copyFileSync(gamesPath, path.join(tempRoot, "games.json"));
+    fs.writeFileSync(path.join(source, "index.html"), "<!doctype html><title>New Demo</title>");
+    fs.writeFileSync(path.join(source, "cover.png"), "demo-cover");
+    fs.writeFileSync(path.join(source, "game.json"), JSON.stringify({
+      id: "new-demo",
+      title: "新 DEMO",
+      description: "自动导入测试作品。",
+      category: "动作原型",
+      tags: ["GodotMaker", "测试"],
+      entry: "index.html",
+      cover: "cover.png",
+      colors: ["#111111", "#222222", "#333333", "#444444"]
+    }));
+
+    const record = importGame({ root: tempRoot, source });
+    const data = JSON.parse(fs.readFileSync(path.join(tempRoot, "games.json"), "utf8"));
+    const game = data.games.find((item) => item.id === "new-demo");
+    assert(slugify("新 DEMO") === "demo", "Slug helper should keep ASCII-safe ids");
+    assert(record.override.coverImage === "./images/new-demo-cover.png", "Imported cover should be copied into images");
+    assert(game && game.url === "./games/new-demo/index.html", "Imported game should link to copied entry");
+    assert(data.customOverrides["new-demo"].title === "新 DEMO", "Imported title should be saved in customOverrides");
+    assert(fs.existsSync(path.join(tempRoot, "games", "new-demo", "index.html")), "Game entry should be copied");
+    assert(fs.existsSync(path.join(tempRoot, "images", "new-demo-cover.png")), "Cover image should be copied");
+    fs.rmSync(tempRoot, { recursive: true, force: true });
   });
 
   test("unit: official Toy upload structure exists", () => {

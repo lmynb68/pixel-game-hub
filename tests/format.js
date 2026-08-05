@@ -4,7 +4,7 @@ const path = require("node:path");
 const root = path.resolve(__dirname, "..");
 const mode = process.argv.includes("--write") ? "write" : "check";
 const ignoredDirs = new Set([".git", "node_modules", "test-results", "playwright-report", ".browser-e2e-profile"]);
-const extensions = new Set([".html", ".js", ".json", ".md", ".yml", ".yaml"]);
+const extensions = new Set([".html", ".js", ".json", ".md", ".svg", ".yml", ".yaml"]);
 const changed = [];
 
 function walk(dir) {

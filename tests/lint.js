@@ -7,6 +7,7 @@ const ignoredDirs = new Set([".git", "node_modules", "test-results", "playwright
 const jsFiles = [];
 const jsonFiles = [];
 const htmlFiles = [];
+const svgFiles = [];
 const workflowFiles = [];
 const tomlFiles = [];
 const failures = [];
@@ -22,6 +23,7 @@ function walk(dir) {
     if (entry.name.endsWith(".js")) jsFiles.push(fullPath);
     if (entry.name.endsWith(".json")) jsonFiles.push(fullPath);
     if (entry.name.endsWith(".html")) htmlFiles.push(fullPath);
+    if (entry.name.endsWith(".svg")) svgFiles.push(fullPath);
     if (entry.name.endsWith(".yml") || entry.name.endsWith(".yaml")) workflowFiles.push(fullPath);
     if (entry.name.endsWith(".toml")) tomlFiles.push(fullPath);
   }
@@ -66,6 +68,12 @@ function lintHtml(file) {
   }
 }
 
+function lintSvg(file) {
+  const svg = fs.readFileSync(file, "utf8");
+  if (!svg.trimStart().startsWith("<svg")) fail(file, "SVG file should start with <svg");
+  if (!svg.includes("</svg>")) fail(file, "SVG file is missing closing </svg>");
+}
+
 function lintWorkflow(file) {
   const text = fs.readFileSync(file, "utf8");
   for (const required of ["npm ci", "npm run lint", "npm run format:check", "npm test"]) {
@@ -91,6 +99,7 @@ walk(root);
 jsFiles.forEach(lintJavaScript);
 jsonFiles.forEach(lintJson);
 htmlFiles.forEach(lintHtml);
+svgFiles.forEach(lintSvg);
 workflowFiles.forEach(lintWorkflow);
 tomlFiles.forEach(lintToml);
 
@@ -100,5 +109,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Lint passed: ${jsFiles.length} JS, ${jsonFiles.length} JSON, ${htmlFiles.length} HTML, ${workflowFiles.length} workflow files, ${tomlFiles.length} TOML files`);
+console.log(`Lint passed: ${jsFiles.length} JS, ${jsonFiles.length} JSON, ${htmlFiles.length} HTML, ${svgFiles.length} SVG, ${workflowFiles.length} workflow files, ${tomlFiles.length} TOML files`);
 

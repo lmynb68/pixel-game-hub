@@ -4,6 +4,13 @@ playwright-report/
 .browser-e2e-profile/
 .edge-check-*/
 
+# Local-only cover samples
+images/sample-*
+
+# Temporary import packages
+incoming/*
+!incoming/README.md
+
 # Local credentials and machine-specific secrets
 .env
 .env.*

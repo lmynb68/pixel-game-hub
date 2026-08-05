@@ -13,14 +13,14 @@
 ```js
 "slime-jump": {
   "title": "我的新名字",
-  "coverImage": "./assets/covers/slime.png",
+  "coverImage": "./images/your-cover.png",
   "description": "这里写新的游戏介绍。",
   "url": "https://example.com/game"
 }
 ```
 
 - `title`：页面上显示的游戏名
-- `coverImage`：封面图，可填本地路径或网络图片地址；留空会用默认像素文件夹封面
+- `coverImage`：封面图，可填 `./images/你的图片.png` 这样的本地路径，也可填 `https://` 开头的网络图片地址；留空会用默认像素文件夹封面
 - `description`：游戏描述
 - `url`：点击“开始游戏”后跳转的位置；本地化游戏可以填本地页面，比如 `./games/snake/index.html`
 - `videoUrl`：点击“查看视频”后跳转的位置；没有视频地址时按钮会显示为“暂无视频”
@@ -28,6 +28,25 @@
 只有填了 `url` 的游戏才会计入“可试玩”，也只有这些游戏会被“随机开玩”抽中。没有接入入口的作品仍然可以展示名称、封面、描述和标签，但按钮会显示为“待接入”。
 
 真正已经本地化的游戏，例如 `pixel-snake`，直接在 `games` 对应条目里维护。
+
+## 自动导入作品
+
+如果要把标题、封面、简介、分类和游戏入口一次性导入，先把作品包放进 `incoming/`：
+
+```text
+incoming/my-demo/
+├── game.json
+├── index.html
+└── cover.png
+```
+
+然后运行：
+
+```bash
+npm run game:import -- ./incoming/my-demo
+```
+
+导入脚本会自动复制游戏文件和封面，并更新 `games.json`。作品包格式见 `incoming/README.md`。
 
 ## 预览页面
 

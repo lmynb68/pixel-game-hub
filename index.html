@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>街机收藏馆 - 街机小馆营业中</title>
+  <title>GodotMaker 收藏馆 - 原型 / DEMO 展示</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./style.css">
 </head>
@@ -11,13 +11,13 @@
   <main class="desktop">
     <section class="top-window">
       <div class="titlebar">
-        <span>街机收藏馆</span>
+        <span>GodotMaker 收藏馆</span>
         <div class="lights"><span class="light"></span><span class="light"></span><span class="light"></span></div>
       </div>
       <div class="hero-copy">
-        <div class="kicker">复古街机游戏厅</div>
-        <h1>街机小馆营业中</h1>
-        <p>挑一款小游戏开局，或者交给随机按钮。这里会慢慢收进更多有趣作品。</p>
+        <div class="kicker">原型 / DEMO 展示页</div>
+        <h1>GodotMaker 收藏馆</h1>
+        <p>这里收录基于 GodotMaker 开源项目制作的原型与 DEMO。挑一款试玩，或交给随机按钮看看它能做出什么。</p>
         <button class="random hero-random" id="random-button">随机游戏</button>
       </div>
       <div class="status-dock" aria-label="玩家状态">
@@ -46,13 +46,13 @@
       </aside>
 
       <section class="folder-window">
-        <div class="titlebar"><span>街机游戏架</span><span id="folder-count">0 款</span></div>
+        <div class="titlebar"><span>DEMO 展示架</span><span id="folder-count">0 款</span></div>
         <div class="window-body">
           <header class="toolbar">
             <div>
-              <div class="kicker">本店游戏单</div>
-              <h2 id="list-title">全部游戏</h2>
-              <p>用分类按钮筛选街机类型，或搜索游戏名、玩法和标签。</p>
+              <div class="kicker">原型 / DEMO</div>
+              <h2 id="list-title">全部作品</h2>
+              <p>用分类按钮筛选 DEMO 类型，或搜索作品名、玩法和标签。</p>
             </div>
             <form class="search-row" id="search-form" role="search">
               <input class="search" id="search-input" type="search" placeholder="搜索游戏、玩法、标签">
@@ -60,7 +60,7 @@
             </form>
           </header>
 
-          <nav class="filters" id="filters" aria-label="游戏类型筛选"></nav>
+          <nav class="filters" id="filters" aria-label="作品类型筛选"></nav>
           <section class="game-grid" id="game-grid" aria-live="polite"></section>
         </div>
       </section>
@@ -68,9 +68,7 @@
   </main>
 
   <footer class="taskbar">
-    <span class="start-chip">投币</span>
-    <span class="task-chip">街机大厅</span>
-    <span class="task-chip">营业中</span>
+    <span class="credit-line">以上均基于 GodotMaker 开源项目制作</span>
   </footer>
 
   <script src="./script.js"></script>

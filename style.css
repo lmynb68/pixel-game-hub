@@ -511,7 +511,7 @@ h1 {
   min-height: 54px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 16px;
   padding: 8px 18px;
   border-top: 4px solid var(--shadow);
@@ -520,7 +520,8 @@ h1 {
 }
 
 .start-chip,
-.task-chip {
+.task-chip,
+.credit-line {
   min-height: 34px;
   display: inline-flex;
   align-items: center;
@@ -535,6 +536,11 @@ h1 {
 .task-chip {
   background: var(--paper);
   color: var(--muted);
+}
+
+.credit-line {
+  background: var(--paper);
+  color: var(--ink);
 }
 
 @media (max-width: 980px) {

@@ -20,7 +20,7 @@ function categoryCount(category) {
   return category === "全部" ? games.length : games.filter((game) => game.category === category).length;
 }
 
-test.describe("街机收藏馆", () => {
+test.describe("GodotMaker 收藏馆", () => {
   test.beforeEach(async ({ page }) => {
     const browserErrors = [];
     page.on("pageerror", (error) => browserErrors.push(error.message));
@@ -43,13 +43,16 @@ test.describe("街机收藏馆", () => {
   });
 
   test("loads the data-driven game shelf", async ({ page }) => {
-    await expect(page).toHaveTitle("街机收藏馆 - 街机小馆营业中");
-    await expect(page.getByRole("heading", { name: "街机小馆营业中" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "全部游戏" })).toBeVisible();
+    await expect(page).toHaveTitle("GodotMaker 收藏馆 - 原型 / DEMO 展示");
+    await expect(page.getByRole("heading", { name: "GodotMaker 收藏馆" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "全部作品" })).toBeVisible();
     await expect(page.locator("#total-count")).toHaveText(String(games.length));
     await expect(page.locator("#playable-count")).toHaveText(String(playableGames.length));
     await expect(page.locator("#building-count")).toHaveText(String(pendingGames.length));
     await expect(page.locator("#folder-count")).toHaveText(`${games.length} 款`);
+    await expect(page.locator(".taskbar")).toHaveText("以上均基于 GodotMaker 开源项目制作");
+    await expect(page.locator(".taskbar")).not.toContainText("投币");
+    await expect(page.locator(".taskbar")).not.toContainText("街机大厅");
     await expect(page.locator(".game-card")).toHaveCount(games.length);
     await expect(page.locator(".play")).toHaveCount(games.length);
     await expect(page.locator(".play:not(:disabled)")).toHaveCount(playableGames.length);
@@ -137,7 +140,7 @@ test.describe("街机收藏馆", () => {
   test("exposes basic accessible structure and named controls", async ({ page }) => {
     await expect(page.locator("main")).toBeVisible();
     await expect(page.locator('[aria-label="玩家状态"]')).toBeVisible();
-    await expect(page.locator('[aria-label="游戏类型筛选"]')).toBeVisible();
+    await expect(page.locator('[aria-label="作品类型筛选"]')).toBeVisible();
     await expect(page.getByPlaceholder("搜索游戏、玩法、标签")).toBeVisible();
     await expect(page.getByRole("button", { name: "搜索" })).toBeVisible();
     await expect(page.getByRole("button", { name: "随机游戏" })).toBeVisible();
@@ -168,7 +171,7 @@ test.describe("街机收藏馆", () => {
   });
 });
 
-test.describe("街机收藏馆 resilience", () => {
+test.describe("GodotMaker 收藏馆 resilience", () => {
   test("recovers when saved player state is corrupted", async ({ page }) => {
     const browserErrors = [];
     page.on("pageerror", (error) => browserErrors.push(error.message));
@@ -262,6 +265,31 @@ test.describe("街机收藏馆 resilience", () => {
     await card.getByRole("button", { name: "查看视频" }).click();
     await expect(page).toHaveURL(/games\/snake\/index\.html$/);
     expect(browserErrors).toEqual([]);
+  });
+
+  test("renders custom cover images from game data", async ({ page }) => {
+    await page.route("**/games.json", (route) => route.fulfill({
+      contentType: "application/json; charset=utf-8",
+      body: JSON.stringify({
+        customOverrides: {},
+        games: [
+          {
+            id: "custom-cover",
+            title: "封面测试",
+            category: "原型测试",
+            status: "已上线",
+            description: "用来检查作品封面能否自定义。",
+            tags: ["封面"],
+            coverImage: "https://example.com/demo-cover.png"
+          }
+        ]
+      })
+    }));
+    await page.goto(pageUrl);
+
+    const cover = page.locator(".game-card", { hasText: "封面测试" }).locator(".cover");
+    await expect(cover).toHaveClass(/has-image/);
+    await expect(cover).toHaveCSS("background-image", /demo-cover\.png/);
   });
 });
 

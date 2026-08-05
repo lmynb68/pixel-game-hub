@@ -85,14 +85,14 @@
     {
       "id": "pixel-snake",
       "title": "像素贪吃蛇",
-      "category": "经典街机",
+      "category": "经典原型",
       "releaseDate": "2026-07-31",
       "status": "已上线",
       "pinned": true,
       "description": "经典贪吃蛇的像素版本：吃金币变长，撞墙或咬到自己就结束，支持键盘和手机按钮。",
       "tags": [
         "贪吃蛇",
-        "街机",
+        "原型",
         "键盘"
       ],
       "clicks": 0,
